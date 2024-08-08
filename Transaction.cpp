@@ -27,3 +27,13 @@ string Transaction::getNarration(){
 int Transaction::getArrayId(){
     return Transaction::arrayId;
 }
+
+void Transaction::toString(){
+    cout << "{" << ends;
+    cout << "id:  " << Transaction::id << ", "<< ends;
+    cout << "value: " << Transaction::value << ", " << ends;
+    cout << "date: " << Transaction::date << ", " << ends;
+    cout << "narration: " << Transaction::narration << ", " << ends;
+    cout << "arrayId: " << Transaction::arrayId << ends;
+    cout << "}" << ends;
+}

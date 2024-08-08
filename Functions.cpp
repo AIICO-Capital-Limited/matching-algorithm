@@ -1,6 +1,9 @@
 #include "Functions.h"
 
-list<list<Transaction> > matchTransactions(list<Transaction> firstList, list<Transaction> secondList){
+list<list<Transaction> > matchTransactions(list<Transaction> sourceArray){
+    list<Transaction> firstList;
+    list<Transaction> secondList;
+    sortTransactions(firstList, secondList, sourceArray);
     list<list<Transaction> > matchingTrans;
     for(auto Itr = begin(firstList); Itr != end(firstList); Itr++){
         auto Itr2 = begin(secondList);
@@ -15,7 +18,10 @@ list<list<Transaction> > matchTransactions(list<Transaction> firstList, list<Tra
     return matchingTrans;
 }
 
-list<list<Transaction> > probableMatchTransactions(list<Transaction> firstList, list<Transaction> secondList){
+list<list<Transaction> > probableMatchTransactions(list<Transaction> sourceArray){
+    list<Transaction> firstList;
+    list<Transaction> secondList;
+    sortTransactions(firstList, secondList, sourceArray);
     list<list<Transaction> > probableMatchTrans;
     for(auto Itr = begin(firstList); Itr != end(firstList); Itr++){
         auto Itr2 = begin(secondList);
@@ -31,7 +37,10 @@ list<list<Transaction> > probableMatchTransactions(list<Transaction> firstList, 
     return probableMatchTrans;
 }
 
-list<Transaction> unmatchTransactions(list<Transaction> firstList, list<Transaction> secondList){
+list<Transaction> unmatchTransactions(list<Transaction> sourceArray){
+    list<Transaction> firstList;
+    list<Transaction> secondList;
+    sortTransactions(firstList, secondList, sourceArray);
     list<Transaction> unmatchedTrans;
     for(auto Itr = begin(firstList); Itr != end(firstList); Itr++){
         bool isMatching = false;
@@ -111,16 +120,17 @@ void display(list<list<Transaction> > matchedTransactions){
         for(auto itr2 = begin(*itr); itr2 != end(*itr); itr2++){
             auto itr3 = itr2;
             if((++itr3) == end(*itr)){
-                cout << itr2->getNarration() << ends;
+                itr2->toString();
             }else{
-                cout << itr2->getNarration() << ", " << ends;
+                itr2->toString();
+                cout << ", " << endl;
             }
         }
         auto itr4 = itr;
         if((++itr4) == end(matchedTransactions)){
             cout << "]" << ends;
         }else{
-            cout << "]," << ends;
+            cout << "]," << endl;
         }
     }
     cout << "]" << endl;
@@ -131,9 +141,10 @@ void display(list<Transaction> unmatchedTransactions){
     for(auto itr = begin(unmatchedTransactions); itr != end(unmatchedTransactions); itr++){
         auto itr2 = itr;
         if((++itr2) == end(unmatchedTransactions)){
-            cout << itr->getNarration() << ends;
+            itr->toString();
         }else{
-            cout << itr->getNarration() << ", " << ends;
+            itr->toString();
+            cout << ", " << endl;
         }
     }
     cout << "]" << endl;

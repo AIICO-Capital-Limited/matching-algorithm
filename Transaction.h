@@ -22,6 +22,7 @@ class Transaction {
     string getDate();
     string getNarration();
     int getArrayId();
+    void toString();
 };
 
 #endif
