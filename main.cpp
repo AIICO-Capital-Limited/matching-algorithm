@@ -21,6 +21,23 @@ int main(){
 
     //Transactions matched to find duplicates
     list<list<Transaction> > matchedTransactions = matchTransactions(array1, array2);
+    list<list<Transaction> > probableMatchedTransactions = probableMatchTransactions(array1, array2);
+    list<Transaction> unmatchedTransactions = unmatchTransactions(array1, array2);
+
+    cout << "*************************************" << endl;
+    cout << "TRANSACTIONS" << endl;
+    cout << "*************************************" << endl;
+
+    cout << "MATCHES:" << ends;
     display(matchedTransactions);
+    cout << "*************************************" << endl;
+
+    cout << "PROBABLE MATCHES:" << ends;
+    display(probableMatchedTransactions);
+    cout << "*************************************" << endl;
+
+    cout << "UNMATCHED:" << ends;
+    display(unmatchedTransactions);
+    cout << "*************************************" << endl;
     return 0;
 }

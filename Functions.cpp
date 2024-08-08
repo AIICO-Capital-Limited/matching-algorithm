@@ -3,27 +3,63 @@
 list<list<Transaction> > matchTransactions(list<Transaction> firstList, list<Transaction> secondList){
     list<list<Transaction> > matchingTrans;
     for(auto Itr = begin(firstList); Itr != end(firstList); Itr++){
-        matchingTrans.push_back(list<Transaction>(1, *Itr));
         auto Itr2 = begin(secondList);
         for(; Itr2 != end(secondList); Itr2++){
-            if((Itr->getVal() == Itr2->getVal()) && withinDateRange(Itr->getDate(), Itr2->getDate()) && relatedNarration(Itr->getNarration(), Itr2->getNarration())){
+            if((Itr->getVal() == Itr2->getVal()) && withinDateRange(Itr->getDate(), Itr2->getDate(), 0) && (Itr->getNarration().compare(Itr2->getNarration()) == 0)){
+                matchingTrans.push_back(list<Transaction>(1, *Itr));
                 matchingTrans.back().push_back(*Itr2);
             }
         }
     }
-    for(auto Itr = begin(secondList); Itr != end(secondList); Itr++){
+
+    return matchingTrans;
+}
+
+list<list<Transaction> > probableMatchTransactions(list<Transaction> firstList, list<Transaction> secondList){
+    list<list<Transaction> > probableMatchTrans;
+    for(auto Itr = begin(firstList); Itr != end(firstList); Itr++){
+        auto Itr2 = begin(secondList);
+        for(; Itr2 != end(secondList); Itr2++){
+            if(((Itr->getVal() == Itr2->getVal()) && withinDateRange(Itr->getDate(), Itr2->getDate(), DAYS_TO_MATCH) && relatedNarration(Itr->getNarration(), Itr2->getNarration()))
+            && !((Itr->getVal() == Itr2->getVal()) && withinDateRange(Itr->getDate(), Itr2->getDate(), 0) && (Itr->getNarration().compare(Itr2->getNarration()) == 0))){
+                probableMatchTrans.push_back(list<Transaction>(1, *Itr));
+                probableMatchTrans.back().push_back(*Itr2);
+            }
+        }
+    }
+
+    return probableMatchTrans;
+}
+
+list<Transaction> unmatchTransactions(list<Transaction> firstList, list<Transaction> secondList){
+    list<Transaction> unmatchedTrans;
+    for(auto Itr = begin(firstList); Itr != end(firstList); Itr++){
         bool isMatching = false;
-        for(auto Itr2 = begin(firstList); Itr2 != end(firstList); Itr2++){
-            if((Itr->getVal() == Itr2->getVal()) && withinDateRange(Itr->getDate(), Itr2->getDate()) && relatedNarration(Itr->getNarration(), Itr2->getNarration())){
+        for(auto Itr2 = begin(secondList); Itr2 != end(secondList); Itr2++){
+            if(((Itr->getVal() == Itr2->getVal()) && withinDateRange(Itr->getDate(), Itr2->getDate(), DAYS_TO_MATCH) && relatedNarration(Itr->getNarration(), Itr2->getNarration()))
+            || ((Itr->getVal() == Itr2->getVal()) && withinDateRange(Itr->getDate(), Itr2->getDate(), 0) && (Itr->getNarration().compare(Itr2->getNarration()) == 0))){
                 isMatching = true;
             }
         }
         if(!isMatching){
-            matchingTrans.push_back(list<Transaction>(1, *Itr));
+            unmatchedTrans.push_back(*Itr);
         }
     }
 
-    return matchingTrans;
+    for(auto Itr = begin(secondList); Itr != end(secondList); Itr++){
+        bool isMatching = false;
+        for(auto Itr2 = begin(firstList); Itr2 != end(firstList); Itr2++){
+            if((Itr->getVal() == Itr2->getVal()) && withinDateRange(Itr->getDate(), Itr2->getDate(), DAYS_TO_MATCH) && relatedNarration(Itr->getNarration(), Itr2->getNarration())
+            || (Itr->getVal() == Itr2->getVal()) && withinDateRange(Itr->getDate(), Itr2->getDate(), 0) && (Itr->getNarration().compare(Itr2->getNarration()) == 0)){
+                isMatching = true;
+            }
+        }
+        if(!isMatching){
+            unmatchedTrans.push_back(*Itr);
+        }
+    }
+
+    return unmatchedTrans;
 }
 
 int diffDates(string date1, string date2){
@@ -38,8 +74,8 @@ int diffDates(string date1, string date2){
     return diffDate;
 }
 
-bool withinDateRange(string date1, string date2){
-    return (diffDates(date1, date2) <= DAYS_TO_MATCH);
+bool withinDateRange(string date1, string date2, int days){
+    return (diffDates(date1, date2) <= days);
 }
 
 bool relatedNarration(string narration1, string narration2){
@@ -56,6 +92,7 @@ bool relatedNarration(string narration1, string narration2){
         for(auto itr2 = begin(secondSeparation); itr2 != end(secondSeparation); itr2++){
             if((*itr).compare(*itr2) == 0){
                 numberOfMatches++;
+                break;
             }
         }
     }
@@ -68,6 +105,7 @@ bool relatedNarration(string narration1, string narration2){
 }
 
 void display(list<list<Transaction> > matchedTransactions){
+    cout << "[" << ends;
     for(auto itr = begin(matchedTransactions); itr != end(matchedTransactions); itr++){
         cout << "[" << ends;
         for(auto itr2 = begin(*itr); itr2 != end(*itr); itr2++){
@@ -78,8 +116,27 @@ void display(list<list<Transaction> > matchedTransactions){
                 cout << itr2->getNarration() << ", " << ends;
             }
         }
-        cout << "]" << endl;
+        auto itr4 = itr;
+        if((++itr4) == end(matchedTransactions)){
+            cout << "]" << ends;
+        }else{
+            cout << "]," << ends;
+        }
     }
+    cout << "]" << endl;
+}
+
+void display(list<Transaction> unmatchedTransactions){
+    cout << "[" << ends;
+    for(auto itr = begin(unmatchedTransactions); itr != end(unmatchedTransactions); itr++){
+        auto itr2 = itr;
+        if((++itr2) == end(unmatchedTransactions)){
+            cout << itr->getNarration() << ends;
+        }else{
+            cout << itr->getNarration() << ", " << ends;
+        }
+    }
+    cout << "]" << endl;
 }
 
 void sortTransactions(list<Transaction>& destinationArray1, list<Transaction>& destinationArray2, list<Transaction> sourceArray){

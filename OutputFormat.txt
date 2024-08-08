@@ -1,0 +1,5 @@
+Result:
+
+[[obj a, obj b], [obj a, obj b], [obj a, obj b]] = matched entries
+[[obj a, obj b], [], []] = probable matches
+[obj] = unmatched
