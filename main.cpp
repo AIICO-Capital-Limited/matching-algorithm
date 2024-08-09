@@ -2,28 +2,46 @@
 #include <list>
 #include "Transaction.h"
 #include "Functions.h"
+#include "json.hpp"
 
 using namespace std;
+using json = nlohmann::json;
 
 int main(){
-    //All the transactions included initially in one array
-    list<Transaction> sourceArray;
-    sourceArray.push_back(Transaction(2, 50, "20/07/2024", "Transaction of 50 Niara to my account", 2));
-    sourceArray.push_back(Transaction(1, 40, "29/07/2024", "Transaction to my mum", 1));
-    sourceArray.push_back(Transaction(1, 40, "21/07/2024", "Transaction3", 2));
-    sourceArray.push_back(Transaction(1, 40, "23/07/2024", "Transaction1", 1));
-    sourceArray.push_back(Transaction(1, 50, "23/07/2024", "Transaction of 50 Naira to me", 1));
-    sourceArray.push_back(Transaction(1, 5, "23/07/2024", "Transaction of 5 Naira to bro", 2));
-    sourceArray.push_back(Transaction(3, 5, "23/07/2024", "Transaction of 5 Naira to bro", 1));
-    sourceArray.push_back(Transaction(4, 70, "23/07/2024", "70 Naira", 1));
-    sourceArray.push_back(Transaction(7, 70, "23/07/2024", "70 Naira", 2));
+    list<Transaction> firstList;
+    list<Transaction> secondList;
+
+    ifstream bankTransfersFile("bank.json");
+    json dataFromJson;
+    bankTransfersFile >> dataFromJson;
+    for(const auto& data : dataFromJson["data"]){
+        int id = data["id"];
+        int value = data["value"];
+        string date = data["date"];
+        string narration = data["narration"];
+
+        firstList.push_back(Transaction(id, value, date, narration));
+    }
+
+    ifstream glTransfersFile("gl.json");
+    json dataFromJson2;
+    glTransfersFile >> dataFromJson2;
+    for(const auto& data : dataFromJson2["data"]){
+        int id = data["id"];
+        int value = data["value"];
+        string date = data["date"];
+        string narration = data["narration"];
+
+        secondList.push_back(Transaction(id, value, date, narration));
+    }
+
     
     //Transactions matched to find duplicates
-    list<list<Transaction> > matchedTransactions = matchTransactions(sourceArray);
+    list<list<Transaction> > matchedTransactions = matchTransactions(firstList, secondList);
     //Transactions matched to find probable duplicates
-    list<list<Transaction> > probableMatchedTransactions = probableMatchTransactions(sourceArray);
+    list<list<Transaction> > probableMatchedTransactions = probableMatchTransactions(firstList, secondList);
     //Transactions that definitely have no matches
-    list<Transaction> unmatchedTransactions = unmatchTransactions(sourceArray);
+    list<Transaction> unmatchedTransactions = unmatchTransactions(firstList, secondList);
 
     cout << "*************************************" << endl;
     cout << "TRANSACTIONS" << endl;
@@ -40,5 +58,6 @@ int main(){
     cout << "UNMATCHED = " << ends;
     display(unmatchedTransactions);
     cout << "*************************************" << endl;
+
     return 0;
 }

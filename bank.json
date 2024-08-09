@@ -1,0 +1,65 @@
+{
+    "type":"Bank",
+    "data":[
+        {
+            "id": 1,
+            "value": 50,
+            "date": "01/01/2023",
+            "narration": "Payment received for services rendered."
+        },
+        {
+            "id": 2,
+            "value": 100,
+            "date": "02/01/2023",
+            "narration": "Purchase of office supplies."
+        },
+        {
+            "id": 3,
+            "value": 10,
+            "date": "04/01/2023",
+            "narration": "Refund for overpayment."
+        },
+        {
+            "id": 4,
+            "value": 200,
+            "date": "05/01/2023",
+            "narration": ""
+        },
+        {
+            "id": 5,
+            "value": 250,
+            "date": "05/01/2023",
+            "narration": "Deposit for future project."
+        },
+        {
+            "id": 6,
+            "value": 300,
+            "date": "06/01/2023",
+            "narration": "Salary payment for January."
+        },
+        {
+            "id": 7,
+            "value": 350,
+            "date": "07/01/2023",
+            "narration": "Invoice payment from client."
+        },
+        {
+            "id": 8,
+            "value": 400,
+            "date": "08/01/2023",
+            "narration": "Advance payment for consulting services."
+        },
+        {
+            "id": 9,
+            "value": 450,
+            "date": "09/01/2023",
+            "narration": "Payment for training workshop."
+        },
+        {
+            "id": 10,
+            "value": 500,
+            "date": "10/01/2023",
+            "narration": "Settlement for project completion."
+        }
+    ]
+}

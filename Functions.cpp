@@ -1,14 +1,10 @@
 #include "Functions.h"
 
-list<list<Transaction> > matchTransactions(list<Transaction> sourceArray){
-    list<Transaction> firstList;
-    list<Transaction> secondList;
-    sortTransactions(firstList, secondList, sourceArray);
+list<list<Transaction> > matchTransactions(list<Transaction> firstList, list<Transaction> secondList){
     list<list<Transaction> > matchingTrans;
     for(auto Itr = begin(firstList); Itr != end(firstList); Itr++){
-        auto Itr2 = begin(secondList);
-        for(; Itr2 != end(secondList); Itr2++){
-            if((Itr->getVal() == Itr2->getVal()) && withinDateRange(Itr->getDate(), Itr2->getDate(), 0) && (Itr->getNarration().compare(Itr2->getNarration()) == 0)){
+        for(auto Itr2 = begin(secondList); Itr2 != end(secondList); Itr2++){
+            if(isMatched(*Itr, *Itr2, PERCENT_TO_MATCH)){
                 matchingTrans.push_back(list<Transaction>(1, *Itr));
                 matchingTrans.back().push_back(*Itr2);
             }
@@ -18,16 +14,11 @@ list<list<Transaction> > matchTransactions(list<Transaction> sourceArray){
     return matchingTrans;
 }
 
-list<list<Transaction> > probableMatchTransactions(list<Transaction> sourceArray){
-    list<Transaction> firstList;
-    list<Transaction> secondList;
-    sortTransactions(firstList, secondList, sourceArray);
+list<list<Transaction> > probableMatchTransactions(list<Transaction> firstList, list<Transaction> secondList){
     list<list<Transaction> > probableMatchTrans;
     for(auto Itr = begin(firstList); Itr != end(firstList); Itr++){
-        auto Itr2 = begin(secondList);
-        for(; Itr2 != end(secondList); Itr2++){
-            if(((Itr->getVal() == Itr2->getVal()) && withinDateRange(Itr->getDate(), Itr2->getDate(), DAYS_TO_MATCH) && relatedNarration(Itr->getNarration(), Itr2->getNarration()))
-            && !((Itr->getVal() == Itr2->getVal()) && withinDateRange(Itr->getDate(), Itr2->getDate(), 0) && (Itr->getNarration().compare(Itr2->getNarration()) == 0))){
+        for(auto Itr2 = begin(secondList); Itr2 != end(secondList); Itr2++){
+            if(isMatched(*Itr, *Itr2, PERCENT_TO_PROB_MATCH) && !isMatched(*Itr, *Itr2, PERCENT_TO_MATCH)){
                 probableMatchTrans.push_back(list<Transaction>(1, *Itr));
                 probableMatchTrans.back().push_back(*Itr2);
             }
@@ -37,16 +28,12 @@ list<list<Transaction> > probableMatchTransactions(list<Transaction> sourceArray
     return probableMatchTrans;
 }
 
-list<Transaction> unmatchTransactions(list<Transaction> sourceArray){
-    list<Transaction> firstList;
-    list<Transaction> secondList;
-    sortTransactions(firstList, secondList, sourceArray);
+list<Transaction> unmatchTransactions(list<Transaction> firstList, list<Transaction> secondList){
     list<Transaction> unmatchedTrans;
     for(auto Itr = begin(firstList); Itr != end(firstList); Itr++){
         bool isMatching = false;
         for(auto Itr2 = begin(secondList); Itr2 != end(secondList); Itr2++){
-            if(((Itr->getVal() == Itr2->getVal()) && withinDateRange(Itr->getDate(), Itr2->getDate(), DAYS_TO_MATCH) && relatedNarration(Itr->getNarration(), Itr2->getNarration()))
-            || ((Itr->getVal() == Itr2->getVal()) && withinDateRange(Itr->getDate(), Itr2->getDate(), 0) && (Itr->getNarration().compare(Itr2->getNarration()) == 0))){
+            if(isMatched(*Itr, *Itr2, PERCENT_TO_PROB_MATCH) || isMatched(*Itr, *Itr2, PERCENT_TO_MATCH)){
                 isMatching = true;
             }
         }
@@ -58,8 +45,7 @@ list<Transaction> unmatchTransactions(list<Transaction> sourceArray){
     for(auto Itr = begin(secondList); Itr != end(secondList); Itr++){
         bool isMatching = false;
         for(auto Itr2 = begin(firstList); Itr2 != end(firstList); Itr2++){
-            if((Itr->getVal() == Itr2->getVal()) && withinDateRange(Itr->getDate(), Itr2->getDate(), DAYS_TO_MATCH) && relatedNarration(Itr->getNarration(), Itr2->getNarration())
-            || (Itr->getVal() == Itr2->getVal()) && withinDateRange(Itr->getDate(), Itr2->getDate(), 0) && (Itr->getNarration().compare(Itr2->getNarration()) == 0)){
+            if(isMatched(*Itr, *Itr2, PERCENT_TO_PROB_MATCH) || isMatched(*Itr, *Itr2, PERCENT_TO_MATCH)){
                 isMatching = true;
             }
         }
@@ -83,34 +69,48 @@ int diffDates(string date1, string date2){
     return diffDate;
 }
 
-bool withinDateRange(string date1, string date2, int days){
-    return (diffDates(date1, date2) <= days);
+double withinDateRange(string date1, string date2){
+    double percentOfDateMatch = 100.0 - (static_cast<double>(diffDates(date1, date2)) * (100.0/static_cast<double>(DAYS_TO_MATCH)));
+    return percentOfDateMatch;
 }
 
-bool relatedNarration(string narration1, string narration2){
+double relatedNarration(string narration1, string narration2){
     transform(narration1.begin(), narration1.end(), narration1.begin(), ::tolower);
     transform(narration2.begin(), narration2.end(), narration2.begin(), ::tolower);
 
-    list<string> narrationSplit1;
-    list<string> narrationSplit2;
-
-    int numberOfMatches = 0;
+    double percentOfMatches = 0.0;
     list<string> firstSeparation = splitString(narration1, ' ');
+    int lengthOfFirstNarration = firstSeparation.size();
     list<string> secondSeparation = splitString(narration2, ' ');
-    for(auto itr = begin(firstSeparation); itr != end(firstSeparation); itr++){
-        for(auto itr2 = begin(secondSeparation); itr2 != end(secondSeparation); itr2++){
-            if((*itr).compare(*itr2) == 0){
-                numberOfMatches++;
-                break;
+    int lengthOfSecondNarration = secondSeparation.size();
+
+    if(lengthOfFirstNarration >= lengthOfSecondNarration){
+        int numberOfMatches = 0;
+        for(auto itr = begin(firstSeparation); itr != end(firstSeparation); itr++){
+            for(auto itr2 = begin(secondSeparation); itr2 != end(secondSeparation); itr2++){
+                if((*itr).compare(*itr2) == 0){
+                    numberOfMatches++;
+                    break;
+                }
             }
         }
+
+        percentOfMatches = static_cast<double>(numberOfMatches)/static_cast<double>(lengthOfFirstNarration) * 100.0;
+    }else{
+        int numberOfMatches = 0;
+        for(auto itr = begin(secondSeparation); itr != end(secondSeparation); itr++){
+            for(auto itr2 = begin(firstSeparation); itr2 != end(firstSeparation); itr2++){
+                if((*itr).compare(*itr2) == 0){
+                    numberOfMatches++;
+                    break;
+                }
+            }
+        }
+
+        percentOfMatches = static_cast<double>(numberOfMatches)/static_cast<double>(lengthOfSecondNarration) * 100.0;
     }
 
-    if (numberOfMatches >= WORDS_TO_MATCH){
-        return true;
-    }else{
-        return false;
-    }
+    return percentOfMatches;
 }
 
 void display(list<list<Transaction> > matchedTransactions){
@@ -119,8 +119,10 @@ void display(list<list<Transaction> > matchedTransactions){
         cout << "[" << ends;
         for(auto itr2 = begin(*itr); itr2 != end(*itr); itr2++){
             auto itr3 = itr2;
+            auto itr5 = itr2;
             if((++itr3) == end(*itr)){
                 itr2->toString();
+                cout << ", " << percentMatching(*itr2, *(--itr5));
             }else{
                 itr2->toString();
                 cout << ", " << endl;
@@ -148,16 +150,6 @@ void display(list<Transaction> unmatchedTransactions){
         }
     }
     cout << "]" << endl;
-}
-
-void sortTransactions(list<Transaction>& destinationArray1, list<Transaction>& destinationArray2, list<Transaction> sourceArray){
-    for(auto itr = begin(sourceArray); itr != end(sourceArray); itr++){
-        if(itr->getArrayId() == 1){
-            destinationArray1.push_back(*itr);
-        }else if(itr->getArrayId() == 2){
-            destinationArray2.push_back(*itr);
-        }
-    }
 }
 
 list<string> splitString(string sentence, char seperator){
@@ -188,3 +180,63 @@ list<string> splitString(string sentence, char seperator){
     }
     return splitStr;
 }
+
+bool isMatched(Transaction transaction1, Transaction transaction2, int percentToMatch){
+    bool isMatching = false;
+    double percentOfValMatch;
+    double percentOfDateMatch;
+    double percentOfNarrMatch;
+    double matchPercent;
+    
+    if(transaction1.getVal() == transaction2.getVal()){
+        percentOfValMatch = 100;
+    }
+
+    percentOfDateMatch = withinDateRange(transaction1.getDate(), transaction2.getDate());
+
+    percentOfNarrMatch = relatedNarration(transaction1.getNarration(), transaction2.getNarration());
+
+    matchPercent = (percentOfValMatch + percentOfDateMatch + percentOfNarrMatch) / 3.0;
+
+    if(matchPercent >= percentToMatch){
+        isMatching = true;
+    }
+
+    return isMatching;
+}
+
+double percentMatching(Transaction transaction1, Transaction transaction2){
+    double percentOfValMatch;
+    double percentOfDateMatch;
+    double percentOfNarrMatch;
+    double matchPercent;
+    
+    if(transaction1.getVal() == transaction2.getVal()){
+        percentOfValMatch = 100;
+    }
+
+    percentOfDateMatch = withinDateRange(transaction1.getDate(), transaction2.getDate());
+
+    percentOfNarrMatch = relatedNarration(transaction1.getNarration(), transaction2.getNarration());
+
+    matchPercent = (percentOfValMatch + percentOfDateMatch + percentOfNarrMatch) / 3.0;
+
+    return matchPercent;
+}
+
+// list<Transaction> readJson(ifstream inputFile){
+//     list<Transaction> listOfTransactions;
+//     json dataFromJson;
+//     inputFile >> dataFromJson;
+
+//     for(const auto& data : dataFromJson){
+//         int id = data["id"];
+//         int value = data["value"];
+//         string date = data["date"];
+//         string narration = data["narration"];
+
+//         listOfTransactions.push_back(Transaction(id, value, date, narration, 0));
+//     }
+
+//     return listOfTransactions;
+// }

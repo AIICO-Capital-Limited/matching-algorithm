@@ -13,15 +13,13 @@ class Transaction {
     int value;
     string date;
     string narration;
-    int arrayId;
 
     public:
-    Transaction(int id, int value, string date, string narration, int arrayId);
+    Transaction(int id, int value, string date, string narration);
     int getId();
     int getVal();
     string getDate();
     string getNarration();
-    int getArrayId();
     void toString();
 };
 
