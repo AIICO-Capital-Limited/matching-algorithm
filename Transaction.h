@@ -4,8 +4,10 @@
 #include <iostream>
 #include <ctime>
 #include <string>
+#include "json.hpp"
 
 using namespace std;
+using json = nlohmann::json;
 
 class Transaction {
     private:
@@ -21,6 +23,7 @@ class Transaction {
     string getDate();
     string getNarration();
     void toString();
+    json toJson() const;
 };
 
 #endif

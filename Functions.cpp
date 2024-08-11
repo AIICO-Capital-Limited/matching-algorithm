@@ -71,7 +71,11 @@ int diffDates(string date1, string date2){
 
 double withinDateRange(string date1, string date2){
     double percentOfDateMatch = 100.0 - (static_cast<double>(diffDates(date1, date2)) * (100.0/static_cast<double>(DAYS_TO_MATCH)));
-    return percentOfDateMatch;
+    if(percentOfDateMatch >= 0){
+        return percentOfDateMatch;
+    }else{
+        return 0.0;
+    }
 }
 
 double relatedNarration(string narration1, string narration2){
@@ -153,12 +157,22 @@ void display(list<Transaction> unmatchedTransactions){
 }
 
 list<string> splitString(string sentence, char seperator){
+    transform(sentence.begin(), sentence.end(), sentence.begin(), ::tolower);
+    for (int i = 0, len = sentence.size(); i <= len; i++)
+    {
+        if (ispunct(sentence[i]))
+        {
+            sentence.erase(i--, 1);
+            len = sentence.size();
+        }
+    }
+
     int i = 0;  
     int startIndex = 0;
     int endIndex = 0;
     list<string> splitStr;
     bool containsSep = false;
-    if(sentence.find(' ') != string::npos){
+    if(sentence.find(seperator) != string::npos){
         containsSep = true;
     }
 
@@ -224,19 +238,54 @@ double percentMatching(Transaction transaction1, Transaction transaction2){
     return matchPercent;
 }
 
-// list<Transaction> readJson(ifstream inputFile){
-//     list<Transaction> listOfTransactions;
-//     json dataFromJson;
-//     inputFile >> dataFromJson;
+void readJsonFile(list<Transaction>& listOfTransaction, string nameOfFile){
+    ifstream jsonFile(nameOfFile);
+    json dataFromJson;
+    jsonFile >> dataFromJson;
+    for(const auto& data : dataFromJson["data"]){
+        int id = data["id"];
+        int value = data["value"];
+        string date = data["date"];
+        string narration = data["narration"];
 
-//     for(const auto& data : dataFromJson){
-//         int id = data["id"];
-//         int value = data["value"];
-//         string date = data["date"];
-//         string narration = data["narration"];
+        listOfTransaction.push_back(Transaction(id, value, date, narration));
+    }
+}
 
-//         listOfTransactions.push_back(Transaction(id, value, date, narration, 0));
-//     }
+json convertToJsonListOfLists(list<list<Transaction> > Transactions, string name, string nameForPercentMatching){
+    json matchedTransaction = json::array();
 
-//     return listOfTransactions;
-// }
+    for(auto itr = begin(Transactions); itr != end(Transactions); itr++){
+        json subMatchedTransaction = json::array();
+        for(auto itr2 = begin(*itr); itr2 != end(*itr); itr2++){
+            auto itr3 = itr2;
+            auto itr4 = itr2;
+            if((++itr3) == end(*itr)){
+                subMatchedTransaction.push_back(itr2->toJson());
+                subMatchedTransaction.push_back(json{{nameForPercentMatching, percentMatching(*itr2, *(--itr4))}});
+            }else{
+                subMatchedTransaction.push_back(itr2->toJson());
+            }
+        }
+        matchedTransaction.push_back(subMatchedTransaction);
+    }
+
+    json namedMatchedTransaction = json{name, matchedTransaction};
+    return namedMatchedTransaction;
+}
+
+json convertToJsonList(list<Transaction> Transaction, string name){
+    json unmatchedTransactions = json::array();
+
+    for(const auto& transaction : Transaction){
+        unmatchedTransactions.push_back(transaction.toJson());
+    }
+
+    json namedUnmatchedTransactions = json{name, unmatchedTransactions};
+
+    return namedUnmatchedTransactions;
+}
+
+json makeJsonObject(json firstList, json secondList, json thirdList){
+    return json{firstList, secondList, thirdList};
+}

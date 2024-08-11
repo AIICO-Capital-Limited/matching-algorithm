@@ -31,3 +31,7 @@ void Transaction::toString(){
     cout << "narration: " << Transaction::narration << ends;
     cout << "}" << ends;
 }
+
+json Transaction::toJson() const{
+    return json{{"id", Transaction::id}, {"value", Transaction::value}, {"date", Transaction::date}, {"narration", Transaction::narration}};
+}

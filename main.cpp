@@ -2,39 +2,15 @@
 #include <list>
 #include "Transaction.h"
 #include "Functions.h"
-#include "json.hpp"
 
 using namespace std;
-using json = nlohmann::json;
 
 int main(){
     list<Transaction> firstList;
     list<Transaction> secondList;
 
-    ifstream bankTransfersFile("bank.json");
-    json dataFromJson;
-    bankTransfersFile >> dataFromJson;
-    for(const auto& data : dataFromJson["data"]){
-        int id = data["id"];
-        int value = data["value"];
-        string date = data["date"];
-        string narration = data["narration"];
-
-        firstList.push_back(Transaction(id, value, date, narration));
-    }
-
-    ifstream glTransfersFile("gl.json");
-    json dataFromJson2;
-    glTransfersFile >> dataFromJson2;
-    for(const auto& data : dataFromJson2["data"]){
-        int id = data["id"];
-        int value = data["value"];
-        string date = data["date"];
-        string narration = data["narration"];
-
-        secondList.push_back(Transaction(id, value, date, narration));
-    }
-
+    readJsonFile(firstList, "bank.json");
+    readJsonFile(secondList, "gl.json");
     
     //Transactions matched to find duplicates
     list<list<Transaction> > matchedTransactions = matchTransactions(firstList, secondList);
@@ -42,6 +18,15 @@ int main(){
     list<list<Transaction> > probableMatchedTransactions = probableMatchTransactions(firstList, secondList);
     //Transactions that definitely have no matches
     list<Transaction> unmatchedTransactions = unmatchTransactions(firstList, secondList);
+
+    //Converts to a json list of lists of Transactions
+    json jsonMatchedTransactions = convertToJsonListOfLists(matchedTransactions, "matched_transactions", "percent_matching");
+    json jsonProbableMatchedTransactions = convertToJsonListOfLists(probableMatchedTransactions, "probable_matches", "percent_matching");
+    //Converts to a json list of Transactions
+    json jsonUnmatchedTransactions = convertToJsonList(unmatchedTransactions, "unmatched_transactions");
+
+    //Converts the three individual json objects to a final one
+    json combinedJsonObject = makeJsonObject(jsonMatchedTransactions, jsonProbableMatchedTransactions, jsonUnmatchedTransactions);
 
     cout << "*************************************" << endl;
     cout << "TRANSACTIONS" << endl;
@@ -58,6 +43,9 @@ int main(){
     cout << "UNMATCHED = " << ends;
     display(unmatchedTransactions);
     cout << "*************************************" << endl;
+    cout << "*************************************" << endl;
+    cout << "JSON REPRESENTATION" << endl;
+    cout << combinedJsonObject.dump(4) << endl;
 
     return 0;
 }

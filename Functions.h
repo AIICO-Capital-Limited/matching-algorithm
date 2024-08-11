@@ -7,8 +7,11 @@
 #include <fstream>
 #include "Transaction.h"
 #include "Constants.h"
+#include "json.hpp"
 
 using namespace std;
+using json = nlohmann::json;
+
 
 int diffDates(string date1, string date2);
 double withinDateRange(string date1, string date2);
@@ -21,5 +24,9 @@ void display(list<list<Transaction> > matchedTransactions);
 void display(list<Transaction> unmatchedTransactions);
 list<string> splitString(string sentence, char separator);
 double percentMatching(Transaction transaction1, Transaction transaction2);
+void readJsonFile(list<Transaction>& listOfTransaction, string nameOfFile);
+json convertToJsonListOfLists(list<list<Transaction> > Transactions, string name, string nameForPercentMatching);
+json convertToJsonList(list<Transaction> Transaction, string name);
+json makeJsonObject(json firstList, json secondList, json thirdList);
 
 #endif

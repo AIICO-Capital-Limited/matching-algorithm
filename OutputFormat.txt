@@ -6,3 +6,28 @@ Result:
 
 the full curly bracket object with all the keys inside the arrays.
 
+Note: Output to JSON file like:
+{
+    "matched":[
+        [
+            {}, {}
+        ],
+        [
+            {}, {}
+        ]
+    ]
+
+    "probable_match":[
+        [
+            {}, {}
+        ],
+        [
+            {}, {}
+        ]
+    ]
+
+    "unmatched":[
+        {},
+        {}
+    ]
+}

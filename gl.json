@@ -1,65 +1,58 @@
 {
     "type":"GL",
     "data":[
-        {
-            "id": 1,
-            "value": 50,
-            "date": "01/01/2023",
-            "narration": "Payment for services rendered."
-        },
-        {
-            "id": 2,
-            "value": 100,
-            "date": "02/01/2023",
-            "narration": "Purchase of office supplies."
-        },
-        {
-            "id": 3,
-            "value": 150,
-            "date": "03/01/2023",
-            "narration": "Refund for overpayment."
-        },
-        {
-            "id": 4,
-            "value": 200,
-            "date": "04/01/2023",
-            "narration": ""
-        },
-        {
-            "id": 5,
-            "value": 250,
-            "date": "05/01/2023",
-            "narration": "Deposit for future project."
-        },
-        {
-            "id": 6,
-            "value": 300,
-            "date": "06/01/2023",
-            "narration": "Salary payment for January."
-        },
-        {
-            "id": 7,
-            "value": 350,
-            "date": "07/01/2023",
-            "narration": "Invoice payment from client."
-        },
-        {
-            "id": 8,
-            "value": 400,
-            "date": "08/01/2023",
-            "narration": "Advance payment for consulting services."
-        },
-        {
-            "id": 9,
-            "value": 450,
-            "date": "09/01/2023",
-            "narration": "Payment for training workshop."
-        },
-        {
-            "id": 10,
-            "value": 500,
-            "date": "10/01/2023",
-            "narration": "Settlement for project completion."
-        }
+        {"id": 3057, "value": 56.75, "date": "19/05/2023", "narration": "Consultation fee for software license renewal."},
+    {"id": 7684, "value": 149.20, "date": "26/06/2023", "narration": "Fee for team development workshop."},
+    {"id": 4592, "value": 89.90, "date": "16/07/2023", "narration": "Consultation for client onboarding."},
+    {"id": 2947, "value": 215.00, "date": "10/08/2023", "narration": "Payment for market research report."},
+    {"id": 6159, "value": 99.45, "date": "18/09/2023", "narration": "Audit fee for branding services."},
+    {"id": 8765, "value": 128.60, "date": "02/11/2023", "narration": "Cost for setting up advertising campaign."},
+    {"id": 1924, "value": 72.30, "date": "22/11/2023", "narration": "Optimization fee for SEO services."},
+    {"id": 3428, "value": 108.50, "date": "15/12/2023", "narration": "Fee for content strategy meeting."},
+    {"id": 4918, "value": 85.00, "date": "10/01/2024", "narration": "Website maintenance charges."},
+    {"id": 4703, "value": 63.90, "date": "13/02/2024", "narration": "Consultation fee for e-commerce solutions."},
+    {"id": 3982, "value": 195.75, "date": "26/03/2024", "narration": "Fee for social media marketing strategy."},
+    {"id": 4257, "value": 134.80, "date": "09/04/2024", "narration": "Cost for video production services."},
+    {"id": 5942, "value": 110.60, "date": "27/05/2024", "narration": "Fee for graphic design services."},
+    {"id": 8325, "value": 98.25, "date": "04/07/2024", "narration": "Consultation for CRM system setup."},
+    {"id": 5768, "value": 145.90, "date": "27/07/2024", "narration": "Analysis fee for market trends."},
+    {"id": 4683, "value": 76.40, "date": "03/09/2024", "narration": "Workshop fee for brand positioning."},
+    {"id": 3791, "value": 120.70, "date": "20/09/2024", "narration": "Fee for PR campaign planning."},
+    {"id": 2759, "value": 158.60, "date": "08/10/2024", "narration": "Consulting fee for sales strategies."},
+    {"id": 4671, "value": 140.90, "date": "13/11/2024", "narration": "Audit fee for digital marketing services."},
+    {"id": 3984, "value": 84.55, "date": "18/12/2024", "narration": "Fee for customer feedback analysis."},
+    {"id": 5274, "value": 175.30, "date": "07/01/2025", "narration": "Cost for product launch strategy."},
+    {"id": 6752, "value": 102.80, "date": "21/02/2025", "narration": "Consultation fee for influencer collaboration."},
+    {"id": 1945, "value": 125.45, "date": "22/03/2025", "narration": "Fee for web analytics review."},
+    {"id": 6294, "value": 90.20, "date": "10/04/2025", "narration": "Consultation fee for lead generation strategy."},
+    {"id": 8523, "value": 143.10, "date": "04/06/2025", "narration": "Fee for email marketing campaign."},
+    {"id": 2846, "value": 68.90, "date": "29/06/2025", "narration": "Consulting fee for market entry strategy."},
+    {"id": 1532, "value": 113.75, "date": "01/08/2025", "narration": "Fee for customer retention plan."},
+    {"id": 7364, "value": 156.60, "date": "21/08/2025", "narration": "Training fee for sales teams."},
+    {"id": 8825, "value": 95.35, "date": "02/10/2025", "narration": "Evaluation fee for advertising campaigns."},
+    {"id": 7194, "value": 108.00, "date": "01/11/2025", "narration": "Fee for brand strategy development."},
+    {"id": 5106, "value": 131.90, "date": "16/11/2025", "narration": "Fee for content creation services."},
+    {"id": 6725, "value": 82.60, "date": "10/12/2025", "narration": "Social media engagement fee."},
+    {"id": 1348, "value": 144.50, "date": "15/01/2026", "narration": "Corporate identity package fee."},
+    {"id": 4983, "value": 122.00, "date": "20/02/2026", "narration": "Fee for marketing automation setup."},
+    {"id": 6142, "value": 138.75, "date": "29/03/2026", "narration": "Competitor analysis fee."},
+    {"id": 7901, "value": 107.40, "date": "15/04/2026", "narration": "Fee for managing client relationships."},
+    {"id": 2574, "value": 81.30, "date": "19/05/2026", "narration": "Fee for product positioning analysis."},
+    {"id": 4718, "value": 119.60, "date": "01/07/2026", "narration": "Consultation fee for web design services."},
+    {"id": 8156, "value": 156.45, "date": "01/08/2026", "narration": "Strategic planning session fee."},
+    {"id": 3287, "value": 87.90, "date": "15/08/2026", "narration": "Event marketing strategy fee."},
+    {"id": 4812, "value": 130.20, "date": "16/09/2026", "narration": "Fee for product development workshop."},
+    {"id": 6542, "value": 111.55, "date": "22/10/2026", "narration": "Consultation for media buying services."},
+    {"id": 1745, "value": 96.75, "date": "19/11/2026", "narration": "Fee for mapping customer journeys."},
+    {"id": 8392, "value": 142.30, "date": "12/12/2026", "narration": "Business strategy review fee."},
+    {"id": 3891, "value": 70.00, "date": "12/01/2027", "narration": "Fee for optimizing sales funnel."},
+    {"id": 7642, "value": 135.00, "date": "11/02/2027", "narration": "Product packaging design fee."},
+    {"id": 2379, "value": 101.40, "date": "27/03/2027", "narration": "Digital transformation plan fee."},
+    {"id": 4896, "value": 158.90, "date": "17/04/2027", "narration": "Fee for advertising spend analysis."},
+    {"id": 6721, "value": 124.30, "date": "22/05/2027", "narration": "Consulting fee for customer acquisition strategy."},
+    {"id": 1749, "value": 85.00, "date": "02/07/2027", "narration": "Fee for optimizing sales processes."},
+    {"id": 2459, "value": 110.90, "date": "18/07/2027", "narration": "Planning fee for market strategies."},
+    {"id": 6785, "value": 90.60, "date": "27/08/2027", "narration": "Brand communication strategy fee."},
+    {"id": 2983, "value": 147.75, "date": "26/09/2027", "narration": "Customer segmentation analysis fee."}
     ]
 }
