@@ -58,15 +58,27 @@ list<Transaction> unmatchTransactions(list<Transaction> firstList, list<Transact
 }
 
 int diffDates(string date1, string date2){
+    const int monthDays[12] = { 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 };
+
     int yearOfDate1 = stoi(date1.substr(6, 4));
     int monthOfDate1 = stoi(date1.substr(3, 2));
-    int dayfDate1 = stoi(date1.substr(0, 2));
+    int dayOfDate1 = stoi(date1.substr(0, 2));
     int yearOfDate2 = stoi(date2.substr(6, 4));
     int monthOfDate2 = stoi(date2.substr(3, 2));
-    int dayfDate2 = stoi(date2.substr(0, 2));
+    int dayOfDate2 = stoi(date2.substr(0, 2));
 
-    int diffDate = abs((yearOfDate1 - yearOfDate2) * DAYS_IN_YEAR) + abs((monthOfDate1 - monthOfDate2) * DAYS_IN_MONTH) + abs(dayfDate1 - dayfDate2);
-    return diffDate;
+    int date1Array[] = {dayOfDate1, monthOfDate1, yearOfDate1};
+    int date2Array[] = {dayOfDate2, monthOfDate2, yearOfDate2};
+
+    long int dayCount1 = (date1Array[2] * 365);
+    dayCount1 += monthDays[date1Array[1]];
+    dayCount1 += date1Array[0];
+    dayCount1 += countLeapYearDays(date1Array);
+    long int dayCount2 = (date2Array[2] * 365);
+    dayCount2 += monthDays[date2Array[1]];
+    dayCount2 += date2Array[0];
+    dayCount2 += countLeapYearDays(date2Array);
+    return ( abs(dayCount1 - dayCount2) );
 }
 
 double withinDateRange(string date1, string date2){
@@ -158,14 +170,13 @@ void display(list<Transaction> unmatchedTransactions){
 
 list<string> splitString(string sentence, char seperator){
     transform(sentence.begin(), sentence.end(), sentence.begin(), ::tolower);
-    for (int i = 0, len = sentence.size(); i <= len; i++)
-    {
-        if (ispunct(sentence[i]))
-        {
-            sentence.erase(i--, 1);
-            len = sentence.size();
+    string result = "";
+    for (char c : sentence) {
+        if (!ispunct(c)) {
+            result += c;
         }
     }
+    sentence = result;
 
     int i = 0;  
     int startIndex = 0;
@@ -288,4 +299,34 @@ json convertToJsonList(list<Transaction> Transaction, string name){
 
 json makeJsonObject(json firstList, json secondList, json thirdList){
     return json{firstList, secondList, thirdList};
+}
+
+int countLeapYearDays(int d[]){
+   int years = d[2];
+   if (d[1] <= 2)
+      years--;
+   return ( (years / 4) - (years / 100) + (years / 400) );
+}
+
+void getMatchedProbableMatchAndUnmatched(string firstFileToReadFrom, string secondFileToReadFrom, string fileToOutputTo, string nameForMatchedTransactions, string nameForProbableMacthedTransactions, string nameForUnmatchedTransactions, string nameForPercentageMatched){
+    list<Transaction> firstList;
+    list<Transaction> secondList;
+
+    readJsonFile(firstList, firstFileToReadFrom);
+    readJsonFile(secondList, secondFileToReadFrom);
+
+    list<list<Transaction>> matchedTransactions = matchTransactions(firstList, secondList);
+    list<list<Transaction>> probableMatchedTransactions = probableMatchTransactions(firstList, secondList);
+    list<Transaction> unmatchedTransactions = unmatchTransactions(firstList, secondList);
+
+    json jsonMatchedTransactions = convertToJsonListOfLists(matchedTransactions, nameForMatchedTransactions, nameForPercentageMatched);
+    json jsonProbableMatchedTransactions = convertToJsonListOfLists(probableMatchedTransactions, nameForProbableMacthedTransactions, nameForPercentageMatched);
+    json jsonUnmatchedTransactions = convertToJsonList(unmatchedTransactions, nameForUnmatchedTransactions);
+
+    json combinedJsonObject = makeJsonObject(jsonMatchedTransactions, jsonProbableMatchedTransactions, jsonUnmatchedTransactions);
+
+    ofstream outputFile(fileToOutputTo);
+
+    outputFile << combinedJsonObject.dump(4);
+    outputFile.close();
 }
