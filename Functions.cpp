@@ -207,27 +207,7 @@ list<string> splitString(string sentence, char seperator){
 }
 
 bool isMatched(Transaction transaction1, Transaction transaction2, int percentToMatch){
-    bool isMatching = false;
-    double percentOfValMatch;
-    double percentOfDateMatch;
-    double percentOfNarrMatch;
-    double matchPercent;
-    
-    if(transaction1.getVal() == transaction2.getVal()){
-        percentOfValMatch = 100;
-    }
-
-    percentOfDateMatch = withinDateRange(transaction1.getDate(), transaction2.getDate());
-
-    percentOfNarrMatch = relatedNarration(transaction1.getNarration(), transaction2.getNarration());
-
-    matchPercent = (percentOfValMatch + percentOfDateMatch + percentOfNarrMatch) / 3.0;
-
-    if(matchPercent >= percentToMatch){
-        isMatching = true;
-    }
-
-    return isMatching;
+    return (percentMatching(transaction1, transaction2) >= percentToMatch);
 }
 
 double percentMatching(Transaction transaction1, Transaction transaction2){
@@ -237,7 +217,7 @@ double percentMatching(Transaction transaction1, Transaction transaction2){
     double matchPercent;
     
     if(transaction1.getVal() == transaction2.getVal()){
-        percentOfValMatch = 100;
+        percentOfValMatch = 100.0;
     }
 
     percentOfDateMatch = withinDateRange(transaction1.getDate(), transaction2.getDate());
