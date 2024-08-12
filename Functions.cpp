@@ -238,8 +238,9 @@ void readJsonFile(list<Transaction>& listOfTransaction, string nameOfFile){
         int value = data["value"];
         string date = data["date"];
         string narration = data["narration"];
+        string tableId = dataFromJson["type"];
 
-        listOfTransaction.push_back(Transaction(id, value, date, narration));
+        listOfTransaction.push_back(Transaction(id, value, date, narration, tableId));
     }
 }
 

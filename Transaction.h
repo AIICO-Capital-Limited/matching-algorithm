@@ -15,13 +15,15 @@ class Transaction {
     int value;
     string date;
     string narration;
+    string tableId;
 
     public:
-    Transaction(int id, int value, string date, string narration);
+    Transaction(int id, int value, string date, string narration, string tableId);
     int getId();
     int getVal();
     string getDate();
     string getNarration();
+    string getTableId();
     void toString();
     json toJson() const;
 };
