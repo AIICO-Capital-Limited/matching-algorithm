@@ -1,6 +1,6 @@
 #include "Transaction.h"
 
-Transaction::Transaction(int id, int value, string date, string narration, string tableId){
+Transaction::Transaction(int id, double value, string date, string narration, string tableId){
     Transaction::id = id;
     Transaction::value = value;
     Transaction::date = date;
@@ -12,7 +12,7 @@ int Transaction::getId(){
     return Transaction::id;
 }
 
-int Transaction::getVal(){
+double Transaction::getVal(){
     return Transaction::value;
 }
 
@@ -33,7 +33,7 @@ void Transaction::toString(){
     cout << "value: " << Transaction::value << ", " << ends;
     cout << "date: " << Transaction::date << ", " << ends;
     cout << "narration: " << Transaction::narration << ", " << ends;
-    cout << "table ID: " << Transaction::tableId << endl;
+    cout << "table ID: " << Transaction::tableId << ends;
     cout << "}" << ends;
 }
 

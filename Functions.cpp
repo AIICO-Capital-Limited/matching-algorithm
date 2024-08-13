@@ -2,11 +2,46 @@
 
 list<list<Transaction> > matchTransactions(list<Transaction> firstList, list<Transaction> secondList){
     list<list<Transaction> > matchingTrans;
+    list<Transaction> transactionsThatHaveMatches;
+    list<Transaction> transactionsThatMatched;
     for(auto Itr = begin(firstList); Itr != end(firstList); Itr++){
         for(auto Itr2 = begin(secondList); Itr2 != end(secondList); Itr2++){
             if(isMatched(*Itr, *Itr2, PERCENT_TO_MATCH)){
-                matchingTrans.push_back(list<Transaction>(1, *Itr));
-                matchingTrans.back().push_back(*Itr2);
+                transactionsThatHaveMatches.push_back(*Itr);
+                break;
+            }
+        }
+    }
+
+    for(auto itr = begin(transactionsThatHaveMatches); itr != end(transactionsThatHaveMatches); itr++){
+        list<Transaction> subMatches;
+        subMatches.push_back(*itr);
+        for(auto itr2 = begin(secondList); itr2 != end(secondList); itr2++){
+            bool alreadyMatched = false;
+            for(auto itr3 = begin(transactionsThatMatched); itr3 != end(transactionsThatMatched); itr3++){
+                if(isMatched(*itr2, *itr3, 100)){
+                    alreadyMatched = true;
+                    break;
+                }
+            }
+
+            if(!alreadyMatched && isMatched(*itr, *itr2, PERCENT_TO_MATCH)){
+                subMatches.push_back(*itr2);
+                transactionsThatMatched.push_back(*itr2);
+            }
+        }
+        matchingTrans.push_back(subMatches);
+    }
+
+    for(auto itr = begin(matchingTrans); itr != end(matchingTrans); itr++){
+        for(auto itr2 = begin(matchingTrans); itr2 != end(matchingTrans); itr2++){
+            for(auto itr3 = begin(*itr2); itr3 != end(*itr2); itr3++){
+                if(itr3 != begin(*itr2)){
+                    if(percentMatching(itr->front(), *itr3) > percentMatching(itr2->front(), *itr3)){
+                        itr->push_back(*itr3);
+                        itr3 = itr2->erase(itr3);
+                    }
+                }
             }
         }
     }
@@ -16,11 +51,47 @@ list<list<Transaction> > matchTransactions(list<Transaction> firstList, list<Tra
 
 list<list<Transaction> > probableMatchTransactions(list<Transaction> firstList, list<Transaction> secondList){
     list<list<Transaction> > probableMatchTrans;
+    list<Transaction> transactionsThatHaveMatches;
+    list<Transaction> transactionsThatMatched;
     for(auto Itr = begin(firstList); Itr != end(firstList); Itr++){
         for(auto Itr2 = begin(secondList); Itr2 != end(secondList); Itr2++){
             if(isMatched(*Itr, *Itr2, PERCENT_TO_PROB_MATCH) && !isMatched(*Itr, *Itr2, PERCENT_TO_MATCH)){
-                probableMatchTrans.push_back(list<Transaction>(1, *Itr));
-                probableMatchTrans.back().push_back(*Itr2);
+                transactionsThatHaveMatches.push_back(*Itr);
+                break;
+            }
+        }
+    }
+
+    for(auto itr = begin(transactionsThatHaveMatches); itr != end(transactionsThatHaveMatches); itr++){
+        list<Transaction> subProbMatches;
+        subProbMatches.push_back(*itr);
+        for(auto itr2 = begin(secondList); itr2 != end(secondList); itr2++){
+            bool alreadyMatched = false;
+            for(auto itr3 = begin(transactionsThatMatched); itr3 != end(transactionsThatMatched); itr3++){
+                if(isMatched(*itr2, *itr3, 100)){
+                    alreadyMatched = true;
+                    break;
+                }
+            }
+
+            if(!alreadyMatched && isMatched(*itr, *itr2, PERCENT_TO_PROB_MATCH) && !isMatched(*itr, *itr2, PERCENT_TO_MATCH)){
+                subProbMatches.push_back(*itr2);
+                transactionsThatMatched.push_back(*itr2);
+            }
+        }
+
+        probableMatchTrans.push_back(subProbMatches);
+    }
+
+    for(auto itr = begin(probableMatchTrans); itr != end(probableMatchTrans); itr++){
+        for(auto itr2 = begin(probableMatchTrans); itr2 != end(probableMatchTrans); itr2++){
+            for(auto itr3 = begin(*itr2); itr3 != end(*itr2); itr3++){
+                if(itr3 != begin(*itr2)){
+                    if(percentMatching(itr->front(), *itr3) > percentMatching(itr2->front(), *itr3)){
+                        itr->push_back(*itr3);
+                        itr3 = itr2->erase(itr3);
+                    }
+                }
             }
         }
     }
@@ -229,13 +300,35 @@ double percentMatching(Transaction transaction1, Transaction transaction2){
     return matchPercent;
 }
 
+double averagePercentMatching(list<Transaction> matchingTransactions){
+    double lengthOfMatchingTrans = matchingTransactions.size();
+    double totalMatchPercentage;
+
+    for(auto itr = begin(matchingTransactions); itr != end(matchingTransactions); itr++){
+        if(itr != begin(matchingTransactions)){
+            totalMatchPercentage += percentMatching(matchingTransactions.front(), *itr);
+        }
+    }
+
+    return (totalMatchPercentage / (lengthOfMatchingTrans - 1.0));
+}
+
+void filterToUnmatched(list<list<Transaction>>& matchingTransactions, list<Transaction>& unmatchedTransactions){
+    for(auto itr = begin(matchingTransactions); itr != end(matchingTransactions); itr++){
+        if(itr->size() == 1){
+            unmatchedTransactions.push_back(itr->front());
+            itr = matchingTransactions.erase(itr);
+        }
+    }
+}
+
 void readJsonFile(list<Transaction>& listOfTransaction, string nameOfFile){
     ifstream jsonFile(nameOfFile);
     json dataFromJson;
     jsonFile >> dataFromJson;
     for(const auto& data : dataFromJson["data"]){
         int id = data["id"];
-        int value = data["value"];
+        double value = data["value"];
         string date = data["date"];
         string narration = data["narration"];
         string tableId = dataFromJson["type"];
@@ -254,7 +347,7 @@ json convertToJsonListOfLists(list<list<Transaction> > Transactions, string name
             auto itr4 = itr2;
             if((++itr3) == end(*itr)){
                 subMatchedTransaction.push_back(itr2->toJson());
-                subMatchedTransaction.push_back(json{{nameForPercentMatching, percentMatching(*itr2, *(--itr4))}});
+                subMatchedTransaction.push_back(json{{nameForPercentMatching, averagePercentMatching(*itr)}});
             }else{
                 subMatchedTransaction.push_back(itr2->toJson());
             }
@@ -299,6 +392,9 @@ void getMatchedProbableMatchAndUnmatched(string firstFileToReadFrom, string seco
     list<list<Transaction>> matchedTransactions = matchTransactions(firstList, secondList);
     list<list<Transaction>> probableMatchedTransactions = probableMatchTransactions(firstList, secondList);
     list<Transaction> unmatchedTransactions = unmatchTransactions(firstList, secondList);
+
+    filterToUnmatched(matchedTransactions, unmatchedTransactions);
+    filterToUnmatched(probableMatchedTransactions, unmatchedTransactions);
 
     json jsonMatchedTransactions = convertToJsonListOfLists(matchedTransactions, nameForMatchedTransactions, nameForPercentageMatched);
     json jsonProbableMatchedTransactions = convertToJsonListOfLists(probableMatchedTransactions, nameForProbableMacthedTransactions, nameForPercentageMatched);

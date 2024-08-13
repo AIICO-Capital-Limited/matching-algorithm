@@ -1,55 +1,299 @@
 {
     "type":"Bank",
     "data":[
-        {"id": 1001, "value": 90.60, "date": "22/08/2027", "narration": "Communication strategy for brands."},
-    {"id": 1002, "value": 63.90, "date": "08/02/2024", "narration": "Consultation on e-commerce solutions."},
-    {"id": 1003, "value": 145.90, "date": "23/07/2024", "narration": "Analysis of market trends."},
-    {"id": 1004, "value": 134.80, "date": "05/04/2024", "narration": "Costs related to video production."},
-    {"id": 1005, "value": 108.50, "date": "11/12/2023", "narration": "Meeting on content strategy."},
-    {"id": 1006, "value": 158.60, "date": "06/10/2024", "narration": "Consulting for sales strategies."},
-    {"id": 1007, "value": 122.00, "date": "17/02/2026", "narration": "Setup of marketing automation tools."},
-    {"id": 1008, "value": 195.75, "date": "21/03/2024", "narration": "Strategy for social media marketing."},
-    {"id": 1009, "value": 120.70, "date": "15/09/2024", "narration": "Planning for PR campaigns."},
-    {"id": 1010, "value": 215.00, "date": "06/08/2023", "narration": "Research report on market trends."},
-    {"id": 1011, "value": 158.90, "date": "12/04/2027", "narration": "Analysis of advertising spend."},
-    {"id": 1012, "value": 131.90, "date": "12/11/2025", "narration": "Creation of content services."},
-    {"id": 1013, "value": 124.30, "date": "17/05/2027", "narration": "Strategy for customer acquisition."},
-    {"id": 1014, "value": 149.20, "date": "24/06/2023", "narration": "Workshop for team development."},
-    {"id": 1015, "value": 144.50, "date": "20/01/2026", "narration": "Package for corporate identity."},
-    {"id": 1016, "value": 138.75, "date": "24/03/2026", "narration": "Analysis of competitors."},
-    {"id": 1017, "value": 113.75, "date": "30/07/2025", "narration": "Plan for customer retention."},
-    {"id": 1018, "value": 102.80, "date": "19/02/2025", "narration": "Collaboration with influencers."},
-    {"id": 1019, "value": 147.75, "date": "22/09/2027", "narration": "Analysis of customer segmentation."},
-    {"id": 1020, "value": 156.60, "date": "16/08/2025", "narration": "Training for sales teams."},
-    {"id": 1021, "value": 128.60, "date": "27/10/2023", "narration": "Setup of advertising campaign."},
-    {"id": 1022, "value": 158.60, "date": "06/10/2024", "narration": "Consulting for sales strategies."},
-    {"id": 1023, "value": 70.00, "date": "11/01/2027", "narration": "Optimization of sales funnel."},
-    {"id": 1024, "value": 143.10, "date": "31/05/2025", "narration": "Campaign for email marketing."},
-    {"id": 1025, "value": 175.30, "date": "10/01/2025", "narration": "Strategy for product launches."},
-    {"id": 1026, "value": 89.90, "date": "12/07/2023", "narration": "Onboarding consultation for clients."},
-    {"id": 1027, "value": 156.45, "date": "28/07/2026", "narration": "Session for strategic planning."},
-    {"id": 1028, "value": 96.75, "date": "15/11/2026", "narration": "Mapping of customer journeys."},
-    {"id": 1029, "value": 140.90, "date": "10/11/2024", "narration": "Audit for digital marketing."},
-    {"id": 1030, "value": 82.60, "date": "13/12/2025", "narration": "Engagement on social media platforms."},
-    {"id": 1031, "value": 85.00, "date": "13/01/2024", "narration": "Maintenance for website services."},
-    {"id": 1032, "value": 76.40, "date": "29/08/2024", "narration": "Workshop for brand positioning."},
-    {"id": 1033, "value": 138.75, "date": "24/03/2026", "narration": "Analysis of competitors."},
-    {"id": 1034, "value": 149.20, "date": "24/06/2023", "narration": "Workshop for team development."},
-    {"id": 1035, "value": 135.00, "date": "07/02/2027", "narration": "Design of product packaging."},
-    {"id": 1036, "value": 113.75, "date": "30/07/2025", "narration": "Plan for customer retention."},
-    {"id": 1037, "value": 99.45, "date": "15/09/2023", "narration": "Audit of branding services."},
-    {"id": 1038, "value": 110.90, "date": "14/07/2027", "narration": "Planning for market strategies."},
-    {"id": 1039, "value": 89.90, "date": "12/07/2023", "narration": "Onboarding consultation for clients."},
-    {"id": 1040, "value": 101.40, "date": "23/03/2027", "narration": "Plan for digital transformation."},
-    {"id": 1041, "value": 87.90, "date": "20/08/2026", "narration": "Strategy for event marketing."},
-    {"id": 1042, "value": 144.50, "date": "20/01/2026", "narration": "Package for corporate identity."},
-    {"id": 1043, "value": 84.55, "date": "14/12/2024", "narration": "Analysis of customer feedback."},
-    {"id": 1044, "value": 102.80, "date": "19/02/2025", "narration": "Collaboration with influencers."},
-    {"id": 1045, "value": 98.25, "date": "28/06/2024", "narration": "Consultation on CRM system implementation."},
-    {"id": 1046, "value": 107.40, "date": "11/04/2026", "narration": "Management of client relationships."},
-    {"id": 1047, "value": 125.45, "date": "19/03/2025", "narration": "Review of web analytics."},
-    {"id": 1048, "value": 56.75, "date": "16/05/2023", "narration": "Renewal of software license."},
-    {"id": 1049, "value": 108.00, "date": "27/10/2025", "narration": "Development of brand strategy."},
-    {"id": 1050, "value": 109.50, "date": "11/12/2023", "narration": "Meeting on content strategy."}
+        {
+            "id": 231,
+            "value": 873.45,
+            "date": "12/03/2024",
+            "narration": "Payment received from client A"
+        },
+        {
+            "id": 756,
+            "value": 249.99,
+            "date": "25/07/2023",
+            "narration": "Office supplies purchase"
+        },
+        {
+            "id": 128,
+            "value": 659.88,
+            "date": "05/10/2023",
+            "narration": "Monthly subscription renewal"
+        },
+        {
+            "id": 874,
+            "value": 1250.00,
+            "date": "20/02/2024",
+            "narration": "Consulting fees payment"
+        },
+        {
+            "id": 542,
+            "value": 340.00,
+            "date": "14/11/2023",
+            "narration": "Team lunch expense"
+        },
+        {
+            "id": 678,
+            "value": 982.75,
+            "date": "28/08/2023",
+            "narration": "Equipment purchase"
+        },
+        {
+            "id": 392,
+            "value": 453.67,
+            "date": "10/01/2024",
+            "narration": "Project milestone payment"
+        },
+        {
+            "id": 183,
+            "value": 764.80,
+            "date": "03/04/2023",
+            "narration": "Travel expense reimbursement"
+        },
+        {
+            "id": 921,
+            "value": 1200.50,
+            "date": "17/09/2023",
+            "narration": "Software licensing fee"
+        },
+        {
+            "id": 657,
+            "value": 300.00,
+            "date": "11/06/2023",
+            "narration": "Client dinner expense"
+        },
+        {
+            "id": 314,
+            "value": 420.00,
+            "date": "09/07/2024",
+            "narration": "Training session fee"
+        },
+        {
+            "id": 890,
+            "value": 999.99,
+            "date": "16/12/2023",
+            "narration": "High-end gadget purchase"
+        },
+        {
+            "id": 475,
+            "value": 275.40,
+            "date": "19/05/2023",
+            "narration": "Office renovation cost"
+        },
+        {
+            "id": 298,
+            "value": 820.00,
+            "date": "07/02/2024",
+            "narration": "Consultant hire fee"
+        },
+        {
+            "id": 730,
+            "value": 600.75,
+            "date": "23/01/2024",
+            "narration": "Marketing campaign expense"
+        },
+        {
+            "id": 102,
+            "value": 125.00,
+            "date": "30/06/2023",
+            "narration": "Printing services"
+        },
+        {
+            "id": 879,
+            "value": 425.89,
+            "date": "21/11/2023",
+            "narration": "Website hosting renewal"
+        },
+        {
+            "id": 547,
+            "value": 785.00,
+            "date": "12/08/2023",
+            "narration": "New software tool"
+        },
+        {
+            "id": 654,
+            "value": 50.00,
+            "date": "02/12/2023",
+            "narration": "Stationery purchase"
+        },
+        {
+            "id": 316,
+            "value": 1340.00,
+            "date": "22/07/2024",
+            "narration": "Large client payment"
+        },
+        {
+            "id": 234,
+            "value": 678.50,
+            "date": "15/04/2024",
+            "narration": "Server upgrade cost"
+        },
+        {
+            "id": 907,
+            "value": 89.99,
+            "date": "05/11/2023",
+            "narration": "Online course purchase"
+        },
+        {
+            "id": 501,
+            "value": 760.00,
+            "date": "29/09/2023",
+            "narration": "Conference registration"
+        },
+        {
+            "id": 320,
+            "value": 420.69,
+            "date": "04/06/2024",
+            "narration": "Freelancer payment"
+        },
+        {
+            "id": 888,
+            "value": 999.95,
+            "date": "13/03/2023",
+            "narration": "Camera purchase"
+        },
+        {
+            "id": 245,
+            "value": 275.00,
+            "date": "18/01/2024",
+            "narration": "Subscription to industry report"
+        },
+        {
+            "id": 762,
+            "value": 840.35,
+            "date": "01/09/2023",
+            "narration": "Data analysis service"
+        },
+        {
+            "id": 433,
+            "value": 390.50,
+            "date": "25/10/2023",
+            "narration": "Team-building activity"
+        },
+        {
+            "id": 611,
+            "value": 670.00,
+            "date": "08/05/2024",
+            "narration": "Professional networking event"
+        },
+        {
+            "id": 124,
+            "value": 220.15,
+            "date": "17/07/2024",
+            "narration": "Document translation service"
+        },
+        {
+            "id": 749,
+            "value": 910.00,
+            "date": "12/03/2023",
+            "narration": "Ad campaign on social media"
+        },
+        {
+            "id": 890,
+            "value": 1100.00,
+            "date": "21/08/2023",
+            "narration": "Corporate seminar cost"
+        },
+        {
+            "id": 432,
+            "value": 485.25,
+            "date": "16/01/2024",
+            "narration": "Team performance bonus"
+        },
+        {
+            "id": 544,
+            "value": 530.50,
+            "date": "30/10/2023",
+            "narration": "New laptop purchase"
+        },
+        {
+            "id": 372,
+            "value": 325.40,
+            "date": "07/12/2023",
+            "narration": "Client gift expense"
+        },
+        {
+            "id": 903,
+            "value": 450.00,
+            "date": "14/03/2023",
+            "narration": "Freelancer contract"
+        },
+        {
+            "id": 295,
+            "value": 675.00,
+            "date": "23/07/2024",
+            "narration": "HR training program"
+        },
+        {
+            "id": 671,
+            "value": 1220.00,
+            "date": "05/09/2023",
+            "narration": "Software maintenance contract"
+        },
+        {
+            "id": 843,
+            "value": 765.30,
+            "date": "28/05/2024",
+            "narration": "Market research report"
+        },
+        {
+            "id": 549,
+            "value": 1350.00,
+            "date": "09/08/2023",
+            "narration": "Product launch event"
+        },
+        {
+            "id": 987,
+            "value": 88.70,
+            "date": "02/11/2023",
+            "narration": "Web hosting service"
+        },
+        {
+            "id": 129,
+            "value": 375.00,
+            "date": "24/01/2024",
+            "narration": "Employee training course"
+        },
+        {
+            "id": 683,
+            "value": 1480.00,
+            "date": "11/07/2024",
+            "narration": "Digital marketing expense"
+        },
+        {
+            "id": 764,
+            "value": 295.90,
+            "date": "20/02/2024",
+            "narration": "Office maintenance"
+        },
+        {
+            "id": 332,
+            "value": 560.40,
+            "date": "07/05/2023",
+            "narration": "IT infrastructure upgrade"
+        },
+        {
+            "id": 110,
+            "value": 980.00,
+            "date": "13/10/2023",
+            "narration": "Consultant payment"
+        },
+        {
+            "id": 851,
+            "value": 125.75,
+            "date": "26/11/2023",
+            "narration": "Documentary film purchase"
+        },
+        {
+            "id": 229,
+            "value": 610.20,
+            "date": "19/03/2024",
+            "narration": "Client acquisition cost"
+        },
+        {
+            "id": 345,
+            "value": 755.00,
+            "date": "30/04/2024",
+            "narration": "Employee appreciation event"
+        }
     ]
 }

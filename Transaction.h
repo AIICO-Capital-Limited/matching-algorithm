@@ -12,15 +12,15 @@ using json = nlohmann::json;
 class Transaction {
     private:
     int id;
-    int value;
+    double value;
     string date;
     string narration;
     string tableId;
 
     public:
-    Transaction(int id, int value, string date, string narration, string tableId);
+    Transaction(int id, double value, string date, string narration, string tableId);
     int getId();
-    int getVal();
+    double getVal();
     string getDate();
     string getNarration();
     string getTableId();
