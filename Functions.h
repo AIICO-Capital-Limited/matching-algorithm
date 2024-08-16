@@ -32,5 +32,12 @@ json convertToJsonListOfLists(list<list<Transaction> > Transactions, string name
 json convertToJsonList(list<Transaction> Transaction, string name);
 json makeJsonObject(json firstList, json secondList, json thirdList);
 void getMatchedProbableMatchAndUnmatched(string fileToReadFrom, string secondFileToReadFrom, string fileToOutputTo, string nameForMatchedTransactions, string nameForProbableMacthedTransactions, string nameForUnmatchedTransactions, string nameForPercentageMatched);
+void repairList(int idTaken, string tableIdTaken, string listTakenFrom, int idTo, string tableIdTo, string listTakenTo, string inputFile);
+void readForAdjustments(list<list<Transaction>>& listOfTransactions, string inputFile, string nameOfTable);
+string determineNameOfTheLastList(string listTakenFrom, string listTakenTo, string inputFile);
+void takeOutTransaction(list<list<Transaction>>& listRemovingFrom, list<Transaction>& listAddedto, int idTaken, string tableIdTaken);
+void takeOutTransaction(list<Transaction>& listRemovingFrom, list<Transaction>& listAddedto, int idTaken, string tableIdTaken);
+void displayJsonInFile(json jsonObject, string nameOfFile);
+void addRelevantTransaction(list<list<Transaction>>& listToAddTo, list<Transaction>& listToRemoveFrom, int idTo, string tableIdTo);
 
 #endif
