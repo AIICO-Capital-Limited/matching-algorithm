@@ -3,7 +3,7 @@
     "data":[
         {
             "id": 354,
-            "value": 873.45,
+            "value": 300,
             "date": "17/03/2024",
             "narration": "Funds received from client A"
         },
@@ -297,7 +297,7 @@
         },
         {
             "id": 735,
-            "value": 873.45,
+            "value": 300,
             "date": "18/03/2024",
             "narration": "Received payment from client A"
         },
@@ -591,7 +591,7 @@
         },
         {
             "id": 164,
-            "value": 873.45,
+            "value": 300,
             "date": "19/03/2024",
             "narration": "Received client payment"
         },

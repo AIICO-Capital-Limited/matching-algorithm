@@ -341,6 +341,18 @@ void readJsonFile(list<Transaction>& listOfTransaction, string nameOfFile){
     }
 }
 
+void readJsonArray(list<Transaction>& listOfTransactions, const json& jsonArray){
+    for(const auto& data : jsonArray["data"]){
+        int id = data["id"];
+        double value = data["value"];
+        string date = data["date"];
+        string narration = data["narration"];
+        string tableId = jsonArray["type"];
+
+        listOfTransactions.push_back(Transaction(id, value, date, narration, tableId));
+    }
+}
+
 json convertToJsonListOfLists(list<list<Transaction> > Transactions, string name, string nameForPercentMatching){
     json matchedTransaction = json::array();
 
@@ -386,9 +398,10 @@ int countLeapYearDays(int d[]){
    return ( (years / 4) - (years / 100) + (years / 400) );
 }
 
-void getMatchedProbableMatchAndUnmatched(string firstFileToReadFrom, string secondFileToReadFrom, string fileToOutputTo, string nameForMatchedTransactions, string nameForProbableMacthedTransactions, string nameForUnmatchedTransactions, string nameForPercentageMatched){
+json getMatchedProbableMatchAndUnmatched(string firstFileToReadFrom, string secondFileToReadFrom, string fileToOutputTo, string nameForMatchedTransactions, string nameForProbableMacthedTransactions, string nameForUnmatchedTransactions){
     list<Transaction> firstList;
     list<Transaction> secondList;
+    string nameForPercentageMatched = "percent_matching";
 
     readJsonFile(firstList, firstFileToReadFrom);
     readJsonFile(secondList, secondFileToReadFrom);
@@ -407,6 +420,32 @@ void getMatchedProbableMatchAndUnmatched(string firstFileToReadFrom, string seco
     json combinedJsonObject = makeJsonObject(jsonMatchedTransactions, jsonProbableMatchedTransactions, jsonUnmatchedTransactions);
 
     displayJsonInFile(combinedJsonObject, fileToOutputTo);
+    return combinedJsonObject;
+}
+
+json getMatchedProbableMatchAndUnmatchedFromJsonLists(json firstJsonToReadFrom, json secondJsonToReadFrom, string fileToOutputTo, string nameForMatchedTransactions, string nameForProbableMacthedTransactions, string nameForUnmatchedTransactions){
+    list<Transaction> firstList;
+    list<Transaction> secondList;
+    string nameForPercentageMatched = "percent_matching";
+
+    readJsonArray(firstList, firstJsonToReadFrom);
+    readJsonArray(secondList, secondJsonToReadFrom);
+
+    list<list<Transaction>> matchedTransactions = matchTransactions(firstList, secondList);
+    list<list<Transaction>> probableMatchedTransactions = probableMatchTransactions(firstList, secondList);
+    list<Transaction> unmatchedTransactions = unmatchTransactions(firstList, secondList);
+
+    filterToUnmatched(matchedTransactions, unmatchedTransactions);
+    filterToUnmatched(probableMatchedTransactions, unmatchedTransactions);
+
+    json jsonMatchedTransactions = convertToJsonListOfLists(matchedTransactions, nameForMatchedTransactions, nameForPercentageMatched);
+    json jsonProbableMatchedTransactions = convertToJsonListOfLists(probableMatchedTransactions, nameForProbableMacthedTransactions, nameForPercentageMatched);
+    json jsonUnmatchedTransactions = convertToJsonList(unmatchedTransactions, nameForUnmatchedTransactions);
+
+    json combinedJsonObject = makeJsonObject(jsonMatchedTransactions, jsonProbableMatchedTransactions, jsonUnmatchedTransactions);
+
+    displayJsonInFile(combinedJsonObject, fileToOutputTo);
+    return combinedJsonObject;
 }
 
 void readForAdjustments(list<list<Transaction>>& listOfTransactions, string inputFile, string nameOfTable){
@@ -449,6 +488,38 @@ void readForAdjustments(list<Transaction>& listOfTransactions, string nameOfTabl
     }
 }
 
+void readForAdjustmentsJson(list<list<Transaction>>& listOfTransactions, json jsonObject, string nameOfTable){
+    for(const auto& data : jsonObject[nameOfTable]){
+        int count = 0;
+        list<Transaction> matchingTransactionGroups;
+        for(const auto& data2 : data){
+            count += 1;
+            if(count < data.size()){
+                string date = data2["date"];
+                int id = data2["id"];
+                string narration = data2["narration"];
+                string tableId = data2["table_ID"];
+                double value = data2["value"];
+
+                matchingTransactionGroups.push_back(Transaction(id, value, date, narration, tableId));
+            }
+        }
+        listOfTransactions.push_back(matchingTransactionGroups);
+    }
+}
+
+void readForAdjustmentsJson(list<Transaction>& listOfTransactions, string nameOfTable, json jsonObject){
+    for(const auto& data : jsonObject[nameOfTable]){
+        string date = data["date"];
+        int id = data["id"];
+        string narration = data["narration"];
+        string tableId = data["table_ID"];
+        double value = data["value"];
+
+        listOfTransactions.push_back(Transaction(id, value, date, narration, tableId));
+    }
+}
+
 string determineNameOfTheLastList(string listTakenFrom, string listTakenTo, string inputFile){
     string lastList;
     
@@ -457,6 +528,19 @@ string determineNameOfTheLastList(string listTakenFrom, string listTakenTo, stri
     jsonFile >> dataFromJson;
 
     for(auto itr = dataFromJson.begin(); itr != dataFromJson.end(); itr++){
+        if((itr.key().compare(listTakenFrom) != 0) && (itr.key().compare(listTakenTo) != 0)){
+            lastList = itr.key();
+            break;
+        }
+    }
+
+    return lastList;
+}
+
+string determineNameOfTheLastListJson(string listTakenFrom, string listTakenTo, json inputFile){
+    string lastList;
+
+    for(auto itr = inputFile.begin(); itr != inputFile.end(); itr++){
         if((itr.key().compare(listTakenFrom) != 0) && (itr.key().compare(listTakenTo) != 0)){
             lastList = itr.key();
             break;
@@ -483,6 +567,7 @@ void takeOutTransaction(list<Transaction>& listRemovingFrom, list<Transaction>& 
         if(itr->getId() == idTaken && (itr->getTableId().compare(tableIdTaken) == 0)){
             listAddedto.push_back(*itr);
             itr = listRemovingFrom.erase(itr);
+            break;
         }
     }
 }
@@ -503,9 +588,11 @@ void displayJsonInFile(json jsonObject, string nameOfFile){
     outputFile.close();
 }
 
-void repairList(int idTaken, string tableIdTaken, string listTakenFrom, int idTo, string tableIdTo, string listTakenTo, string inputFile){
+json repairList(int idTaken, string tableIdTaken, string listTakenFrom, int idTo, string tableIdTo, string listTakenTo, string inputFile){
     string standardizedListTakenFrom = listTakenFrom;
     string standardizedListTakenTo = listTakenTo;
+    string nameForPercentMatching = "percent_matching";
+    string nameOfOutputFile = "ChangedOutput.json";
 
     transform(standardizedListTakenFrom.begin(), standardizedListTakenFrom.end(), standardizedListTakenFrom.begin(), ::toupper);
     transform(standardizedListTakenTo.begin(), standardizedListTakenTo.end(), standardizedListTakenTo.begin(), ::toupper);
@@ -514,33 +601,67 @@ void repairList(int idTaken, string tableIdTaken, string listTakenFrom, int idTo
         list<Transaction> transactionToBeChanged;
         list<list<Transaction>> matchingTrans;
 
-        readForAdjustments(matchingTrans, inputFile, listTakenFrom);
+        if(listTakenFrom.compare(listTakenTo) != 0){
+            readForAdjustments(matchingTrans, inputFile, listTakenFrom);
 
-        takeOutTransaction(matchingTrans, transactionToBeChanged, idTaken, tableIdTaken);
+            takeOutTransaction(matchingTrans, transactionToBeChanged, idTaken, tableIdTaken);
 
-        list<list<Transaction>> listToTakeTo;
+            list<list<Transaction>> listToTakeTo;
 
-        readForAdjustments(listToTakeTo, inputFile, listTakenTo);
+            readForAdjustments(listToTakeTo, inputFile, listTakenTo);
 
-        addRelevantTransaction(listToTakeTo, transactionToBeChanged, idTo, tableIdTo);
+            addRelevantTransaction(listToTakeTo, transactionToBeChanged, idTo, tableIdTo);
 
-        list<Transaction> unchangedList;
-        string lastList = determineNameOfTheLastList(listTakenFrom, listTakenTo, inputFile);
+            list<Transaction> unchangedList;
+            string lastList = determineNameOfTheLastList(listTakenFrom, listTakenTo, inputFile);
 
-        readForAdjustments(unchangedList, lastList, inputFile);
+            readForAdjustments(unchangedList, lastList, inputFile);
 
-        json newTransactionList1 = convertToJsonListOfLists(matchingTrans, listTakenFrom, "percent_matching");
-        json newTransactionList2 = convertToJsonListOfLists(listToTakeTo, listTakenTo, "percent_matching");
-        json unchangedTransactionList = convertToJsonList(unchangedList, lastList);
+            json newTransactionList1 = convertToJsonListOfLists(matchingTrans, listTakenFrom, nameForPercentMatching);
+            json newTransactionList2 = convertToJsonListOfLists(listToTakeTo, listTakenTo, nameForPercentMatching);
+            json unchangedTransactionList = convertToJsonList(unchangedList, lastList);
 
-        if((standardizedListTakenFrom.find("MATCHED") != string::npos) && (standardizedListTakenFrom.find("UNMATCHED") == string::npos) && (standardizedListTakenFrom.find("PROBABLE") == string::npos)){
-            json fullJsonObject = makeJsonObject(newTransactionList1, newTransactionList2, unchangedTransactionList);
+            if((standardizedListTakenFrom.find("MATCHED") != string::npos) && (standardizedListTakenFrom.find("UNMATCHED") == string::npos) && (standardizedListTakenFrom.find("PROBABLE") == string::npos)){
+                json fullJsonObject = makeJsonObject(newTransactionList1, newTransactionList2, unchangedTransactionList);
 
-            displayJsonInFile(fullJsonObject, "ChangedOutput.json");
+                displayJsonInFile(fullJsonObject, nameOfOutputFile);
+                return fullJsonObject;
+            }else{
+                json fullJsonObject = makeJsonObject(newTransactionList2, newTransactionList1, unchangedTransactionList);
+
+                displayJsonInFile(fullJsonObject, nameOfOutputFile);
+                return fullJsonObject;
+            }
         }else{
-            json fullJsonObject = makeJsonObject(newTransactionList2, newTransactionList1, unchangedTransactionList);
+            readForAdjustments(matchingTrans, inputFile, listTakenFrom);
 
-            displayJsonInFile(fullJsonObject, "ChangedOutput.json");
+            takeOutTransaction(matchingTrans, transactionToBeChanged, idTaken, tableIdTaken);
+
+            addRelevantTransaction(matchingTrans, transactionToBeChanged, idTo, tableIdTo);
+            list<list<Transaction>> unchangedList1;
+            string lastList1 = determineNameOfTheLastList(listTakenFrom, listTakenTo, inputFile);
+
+            readForAdjustments(unchangedList1, inputFile, lastList1);
+
+            list<Transaction> unchangedList2;
+            string lastList2 = determineNameOfTheLastList(listTakenFrom, lastList1, inputFile);
+
+            readForAdjustments(unchangedList2, lastList2, inputFile);
+            json newTransactionList1 = convertToJsonListOfLists(matchingTrans, listTakenFrom, nameForPercentMatching);
+            json unchangedTransactionList2 = convertToJsonListOfLists(unchangedList1, lastList1, nameForPercentMatching);
+            json unchangedTransactionList = convertToJsonList(unchangedList2, lastList2);
+
+            if((standardizedListTakenFrom.find("MATCHED") != string::npos) && (standardizedListTakenFrom.find("UNMATCHED") == string::npos) && (standardizedListTakenFrom.find("PROBABLE") == string::npos)){
+                json fullJsonObject = makeJsonObject(newTransactionList1, unchangedTransactionList2, unchangedTransactionList);
+
+                displayJsonInFile(fullJsonObject, nameOfOutputFile);
+                return fullJsonObject;
+            }else{
+                json fullJsonObject = makeJsonObject(unchangedTransactionList2, newTransactionList1, unchangedTransactionList);
+
+                displayJsonInFile(fullJsonObject, nameOfOutputFile);
+                return fullJsonObject;
+            }
         }
     }else if(standardizedListTakenFrom.find("UNMATCHED") != string::npos && standardizedListTakenTo.find("UNMATCHED") == string::npos){
         list<Transaction> transactionsTobeChanged;
@@ -561,18 +682,20 @@ void repairList(int idTaken, string tableIdTaken, string listTakenFrom, int idTo
 
         readForAdjustments(unchangedList, inputFile, lastList);
 
-        json newTransactionList1 = convertToJsonListOfLists(receivingListOfTransactions, listTakenTo, "percent_matching");
-        json unchangedTransactionList = convertToJsonListOfLists(unchangedList, lastList, "percent_matching");
+        json newTransactionList1 = convertToJsonListOfLists(receivingListOfTransactions, listTakenTo, nameForPercentMatching);
+        json unchangedTransactionList = convertToJsonListOfLists(unchangedList, lastList, nameForPercentMatching);
         json newTransactionList2 = convertToJsonList(unmatchedTrans, listTakenFrom);
 
         if((standardizedListTakenTo.find("MATCHED") != string::npos) && (standardizedListTakenTo.find("UNMATCHED") == string::npos) && (standardizedListTakenTo.find("PROBABLE") == string::npos)){
             json fullJsonObject = makeJsonObject(newTransactionList1, unchangedTransactionList, newTransactionList2);
 
-            displayJsonInFile(fullJsonObject, "ChangedOutput.json");
+            displayJsonInFile(fullJsonObject, nameOfOutputFile);
+            return fullJsonObject;
         }else{
             json fullJsonObject = makeJsonObject(unchangedTransactionList, newTransactionList1, newTransactionList2);
 
-            displayJsonInFile(fullJsonObject, "ChangedOutput.json");
+            displayJsonInFile(fullJsonObject, nameOfOutputFile);
+            return fullJsonObject;
         }
     }else if(standardizedListTakenFrom.find("UNMATCHED") == string::npos && standardizedListTakenTo.find("UNMATCHED") != string::npos){
         list<Transaction> transactionToBeChanged;
@@ -593,18 +716,233 @@ void repairList(int idTaken, string tableIdTaken, string listTakenFrom, int idTo
 
         readForAdjustments(unchangedList, inputFile, lastList);
 
-        json newTransactionList1 = convertToJsonListOfLists(matchingTrans, listTakenFrom, "percent_matching");
-        json unchangedTransactionList = convertToJsonListOfLists(unchangedList, lastList, "percent_matching");
+        json newTransactionList1 = convertToJsonListOfLists(matchingTrans, listTakenFrom, nameForPercentMatching);
+        json unchangedTransactionList = convertToJsonListOfLists(unchangedList, lastList, nameForPercentMatching);
         json newTransactionList2 = convertToJsonList(listToTakeTo, listTakenTo);
 
         if((standardizedListTakenFrom.find("MATCHED") != string::npos) && (standardizedListTakenFrom.find("UNMATCHED") == string::npos) && (standardizedListTakenFrom.find("PROBABLE") == string::npos)){
             json fullJsonObject = makeJsonObject(newTransactionList1, unchangedTransactionList, newTransactionList2);
 
-            displayJsonInFile(fullJsonObject, "ChangedOutput.json");
+            displayJsonInFile(fullJsonObject, nameOfOutputFile);
+            return fullJsonObject;
         }else{
             json fullJsonObject = makeJsonObject(unchangedTransactionList, newTransactionList1, newTransactionList2);
 
-            displayJsonInFile(fullJsonObject, "ChangedOutput.json");
+            displayJsonInFile(fullJsonObject, nameOfOutputFile);
+            return fullJsonObject;
         }
+    }else if(standardizedListTakenFrom.find("UNMATCHED") != string::npos && standardizedListTakenTo.find("UNMATCHED") != string::npos){
+        list<Transaction> transactionsToBeChanged;
+        list<Transaction> unmatchedTrans;
+
+        readForAdjustments(unmatchedTrans, listTakenFrom, inputFile);
+
+        list<list<Transaction>> unchangedList1;
+        string lastList1 = determineNameOfTheLastList(listTakenFrom, listTakenTo, inputFile);
+        string standardizedLastList1 = lastList1;
+        transform(standardizedLastList1.begin(), standardizedLastList1.end(), standardizedLastList1.begin(), ::toupper);
+
+        readForAdjustments(unchangedList1, inputFile, lastList1);
+
+        list<list<Transaction>> unchangedList2;
+        string lastList2 = determineNameOfTheLastList(listTakenFrom, lastList1, inputFile);
+
+        readForAdjustments(unchangedList2, inputFile, lastList2);
+
+        json newTransactionList1 = convertToJsonList(unmatchedTrans, listTakenFrom);
+        json unchangedTransactionList1 = convertToJsonListOfLists(unchangedList1, lastList1, nameForPercentMatching);
+        json unchangedTransactionList2 = convertToJsonListOfLists(unchangedList2, lastList2, nameForPercentMatching);
+
+            if((standardizedLastList1.find("MATCHED") != string::npos) && (standardizedLastList1.find("UNMATCHED") == string::npos) && (standardizedLastList1.find("PROBABLE") == string::npos)){
+                json fullJsonObject = makeJsonObject(unchangedTransactionList1, unchangedTransactionList2, newTransactionList1);
+
+                displayJsonInFile(fullJsonObject, nameOfOutputFile);
+                return fullJsonObject;
+            }else{
+                json fullJsonObject = makeJsonObject(unchangedTransactionList2, unchangedTransactionList1, newTransactionList1);
+
+                displayJsonInFile(fullJsonObject, nameOfOutputFile);
+                return fullJsonObject;
+            }
+    }
+}
+
+json repairListJson(int idTaken, string tableIdTaken, string listTakenFrom, int idTo, string tableIdTo, string listTakenTo, json inputFile){
+    string standardizedListTakenFrom = listTakenFrom;
+    string standardizedListTakenTo = listTakenTo;
+    string nameForPercentMatching = "percent_matching";
+    string nameOfOutputFile = "ChangedOutput.json";
+
+    transform(standardizedListTakenFrom.begin(), standardizedListTakenFrom.end(), standardizedListTakenFrom.begin(), ::toupper);
+    transform(standardizedListTakenTo.begin(), standardizedListTakenTo.end(), standardizedListTakenTo.begin(), ::toupper);
+
+    if(standardizedListTakenFrom.find("UNMATCHED") == string::npos && standardizedListTakenTo.find("UNMATCHED") == string::npos){
+        list<Transaction> transactionToBeChanged;
+        list<list<Transaction>> matchingTrans;
+
+        if(listTakenFrom.compare(listTakenTo) != 0){
+            readForAdjustmentsJson(matchingTrans, inputFile, listTakenFrom);
+
+            takeOutTransaction(matchingTrans, transactionToBeChanged, idTaken, tableIdTaken);
+
+            list<list<Transaction>> listToTakeTo;
+
+            readForAdjustmentsJson(listToTakeTo, inputFile, listTakenTo);
+
+            addRelevantTransaction(listToTakeTo, transactionToBeChanged, idTo, tableIdTo);
+
+            list<Transaction> unchangedList;
+            string lastList = determineNameOfTheLastListJson(listTakenFrom, listTakenTo, inputFile);
+
+            readForAdjustmentsJson(unchangedList, lastList, inputFile);
+
+            json newTransactionList1 = convertToJsonListOfLists(matchingTrans, listTakenFrom, nameForPercentMatching);
+            json newTransactionList2 = convertToJsonListOfLists(listToTakeTo, listTakenTo, nameForPercentMatching);
+            json unchangedTransactionList = convertToJsonList(unchangedList, lastList);
+
+            if((standardizedListTakenFrom.find("MATCHED") != string::npos) && (standardizedListTakenFrom.find("UNMATCHED") == string::npos) && (standardizedListTakenFrom.find("PROBABLE") == string::npos)){
+                json fullJsonObject = makeJsonObject(newTransactionList1, newTransactionList2, unchangedTransactionList);
+
+                displayJsonInFile(fullJsonObject, nameOfOutputFile);
+                return fullJsonObject;
+            }else{
+                json fullJsonObject = makeJsonObject(newTransactionList2, newTransactionList1, unchangedTransactionList);
+
+                displayJsonInFile(fullJsonObject, nameOfOutputFile);
+                return fullJsonObject;
+            }
+        }else{
+            readForAdjustmentsJson(matchingTrans, inputFile, listTakenFrom);
+
+            takeOutTransaction(matchingTrans, transactionToBeChanged, idTaken, tableIdTaken);
+
+            addRelevantTransaction(matchingTrans, transactionToBeChanged, idTo, tableIdTo);
+
+            list<list<Transaction>> unchangedList1;
+            string lastList1 = determineNameOfTheLastListJson(listTakenFrom, listTakenTo, inputFile);
+
+            readForAdjustmentsJson(unchangedList1, inputFile, lastList1);
+
+            list<Transaction> unchangedList2;
+            string lastList2 = determineNameOfTheLastListJson(listTakenFrom, lastList1, inputFile);
+
+            readForAdjustmentsJson(unchangedList2, lastList2, inputFile);
+            json newTransactionList1 = convertToJsonListOfLists(matchingTrans, listTakenFrom, nameForPercentMatching);
+            json unchangedTransactionList2 = convertToJsonListOfLists(unchangedList1, lastList1, nameForPercentMatching);
+            json unchangedTransactionList = convertToJsonList(unchangedList2, lastList2);
+
+            if((standardizedListTakenFrom.find("MATCHED") != string::npos) && (standardizedListTakenFrom.find("UNMATCHED") == string::npos) && (standardizedListTakenFrom.find("PROBABLE") == string::npos)){
+                json fullJsonObject = makeJsonObject(newTransactionList1, unchangedTransactionList2, unchangedTransactionList);
+
+                displayJsonInFile(fullJsonObject, nameOfOutputFile);
+                return fullJsonObject;
+            }else{
+                json fullJsonObject = makeJsonObject(unchangedTransactionList2, newTransactionList1, unchangedTransactionList);
+
+                displayJsonInFile(fullJsonObject, nameOfOutputFile);
+                return fullJsonObject;
+            }
+        }
+    }else if(standardizedListTakenFrom.find("UNMATCHED") != string::npos && standardizedListTakenTo.find("UNMATCHED") == string::npos){
+        list<Transaction> transactionsTobeChanged;
+        list<Transaction> unmatchedTrans;
+
+        readForAdjustmentsJson(unmatchedTrans, listTakenFrom, inputFile);
+
+        takeOutTransaction(unmatchedTrans, transactionsTobeChanged, idTaken, tableIdTaken);
+
+        list<list<Transaction>> receivingListOfTransactions;
+
+        readForAdjustmentsJson(receivingListOfTransactions, inputFile, listTakenTo);
+
+        addRelevantTransaction(receivingListOfTransactions, transactionsTobeChanged, idTo, tableIdTo);
+
+        list<list<Transaction>> unchangedList;
+        string lastList = determineNameOfTheLastListJson(listTakenFrom, listTakenTo, inputFile);
+
+        readForAdjustmentsJson(unchangedList, inputFile, lastList);
+
+        json newTransactionList1 = convertToJsonListOfLists(receivingListOfTransactions, listTakenTo, nameForPercentMatching);
+        json unchangedTransactionList = convertToJsonListOfLists(unchangedList, lastList, nameForPercentMatching);
+        json newTransactionList2 = convertToJsonList(unmatchedTrans, listTakenFrom);
+
+        if((standardizedListTakenTo.find("MATCHED") != string::npos) && (standardizedListTakenTo.find("UNMATCHED") == string::npos) && (standardizedListTakenTo.find("PROBABLE") == string::npos)){
+            json fullJsonObject = makeJsonObject(newTransactionList1, unchangedTransactionList, newTransactionList2);
+
+            displayJsonInFile(fullJsonObject, nameOfOutputFile);
+            return fullJsonObject;
+        }else{
+            json fullJsonObject = makeJsonObject(unchangedTransactionList, newTransactionList1, newTransactionList2);
+
+            displayJsonInFile(fullJsonObject, nameOfOutputFile);
+            return fullJsonObject;
+        }
+    }else if(standardizedListTakenFrom.find("UNMATCHED") == string::npos && standardizedListTakenTo.find("UNMATCHED") != string::npos){
+        list<Transaction> transactionToBeChanged;
+        list<list<Transaction>> matchingTrans;
+
+        readForAdjustmentsJson(matchingTrans, inputFile, listTakenFrom);
+
+        takeOutTransaction(matchingTrans, transactionToBeChanged, idTaken, tableIdTaken);
+
+        list<Transaction> listToTakeTo;
+
+        readForAdjustmentsJson(listToTakeTo, listTakenTo, inputFile);
+
+        listToTakeTo.push_back(transactionToBeChanged.front());
+
+        list<list<Transaction>> unchangedList;
+        string lastList = determineNameOfTheLastListJson(listTakenFrom, listTakenTo, inputFile);
+
+        readForAdjustmentsJson(unchangedList, inputFile, lastList);
+
+        json newTransactionList1 = convertToJsonListOfLists(matchingTrans, listTakenFrom, nameForPercentMatching);
+        json unchangedTransactionList = convertToJsonListOfLists(unchangedList, lastList, nameForPercentMatching);
+        json newTransactionList2 = convertToJsonList(listToTakeTo, listTakenTo);
+
+        if((standardizedListTakenFrom.find("MATCHED") != string::npos) && (standardizedListTakenFrom.find("UNMATCHED") == string::npos) && (standardizedListTakenFrom.find("PROBABLE") == string::npos)){
+            json fullJsonObject = makeJsonObject(newTransactionList1, unchangedTransactionList, newTransactionList2);
+
+            displayJsonInFile(fullJsonObject, nameOfOutputFile);
+            return fullJsonObject;
+        }else{
+            json fullJsonObject = makeJsonObject(unchangedTransactionList, newTransactionList1, newTransactionList2);
+
+            displayJsonInFile(fullJsonObject, nameOfOutputFile);
+            return fullJsonObject;
+        }
+    }else if(standardizedListTakenFrom.find("UNMATCHED") != string::npos && standardizedListTakenTo.find("UNMATCHED") != string::npos){
+        list<Transaction> transactionsToBeChanged;
+        list<Transaction> unmatchedTrans;
+
+        readForAdjustmentsJson(unmatchedTrans, listTakenFrom, inputFile);
+
+        list<list<Transaction>> unchangedList1;
+        string lastList1 = determineNameOfTheLastListJson(listTakenFrom, listTakenTo, inputFile);
+        string standardizedLastList1 = lastList1;
+        transform(standardizedLastList1.begin(), standardizedLastList1.end(), standardizedLastList1.begin(), ::toupper);
+
+        readForAdjustmentsJson(unchangedList1, inputFile, lastList1);
+
+        list<list<Transaction>> unchangedList2;
+        string lastList2 = determineNameOfTheLastListJson(listTakenFrom, lastList1, inputFile);
+
+        readForAdjustmentsJson(unchangedList2, inputFile, lastList2);
+
+        json newTransactionList1 = convertToJsonList(unmatchedTrans, listTakenFrom);
+        json unchangedTransactionList1 = convertToJsonListOfLists(unchangedList1, lastList1, nameForPercentMatching);
+        json unchangedTransactionList2 = convertToJsonListOfLists(unchangedList2, lastList2, nameForPercentMatching);
+
+            if((standardizedLastList1.find("MATCHED") != string::npos) && (standardizedLastList1.find("UNMATCHED") == string::npos) && (standardizedLastList1.find("PROBABLE") == string::npos)){
+                json fullJsonObject = makeJsonObject(unchangedTransactionList1, unchangedTransactionList2, newTransactionList1);
+
+                displayJsonInFile(fullJsonObject, nameOfOutputFile);
+                return fullJsonObject;
+            }else{
+                json fullJsonObject = makeJsonObject(unchangedTransactionList2, unchangedTransactionList1, newTransactionList1);
+
+                displayJsonInFile(fullJsonObject, nameOfOutputFile);
+                return fullJsonObject;
+            }
     }
 }
