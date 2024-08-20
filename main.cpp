@@ -6,6 +6,8 @@
 using namespace std;
 
 int main(){
+
+    //Initializing two json lists to read from
     json array1 = json::array();
     array1.push_back({
             {"id", 231},
@@ -56,6 +58,8 @@ int main(){
         {"data", array2}
     };
 
+
+    //Initializing the organizedTransactions json objiect
     json array3 = json::array();
     array3.push_back({
                 {"date", "12/03/2024"},
@@ -106,18 +110,19 @@ int main(){
     json array7 = json::array();
     json array8 = json::array();
 
-   // array8.push_back(array7);
+    json organizedTransactions = {
+        {"matched_transaction", array6},
+        {"probable_matches", array9},
+        {"unmatched_transactions", array8}
+    };
 
-    // json organizedTransactions = {
-    //     {"matched_transaction", array6},
-    //     {"probable_matches", array9},
-    //     {"unmatched_transactions", array8}
-    // };
-
+    //Operations on both files and json objects
     // getMatchedProbableMatchAndUnmatched("bank.json", "gl.json", "output.json", "matched_transaction", "probable_matches", "unmatched_transactions");
-    json organizedTransactions = getMatchedProbableMatchAndUnmatchedFromJsonLists(firstList, secondList, "output.json", "matched_transaction", "probable_matches", "unmatched_transactions");
-    // repairList(542, "Bank", "matched_transaction", 973, "GL", "unmatched_transactions", "output.json");
-    repairListJson(912, "GL", "probable_matches", 354, "GL", "probable_matches", organizedTransactions);
+    // getMatchedProbableMatchAndUnmatchedFromJsonLists(firstList, secondList, "output.json", "matched_transaction", "probable_matches", "unmatched_transactions");
+    // repairList(338, "GL", "probable_matches", 542, "Bank", "matched_transaction", "output.json");
+    // repairListJson(912, "GL", "probable_matches", 354, "GL", "probable_matches", organizedTransactions);
+    // manuallyMatch(690, "GL", "matched_transaction", 392, "Bank", "matched_transaction", "output.json");
+    manuallyMatchJson(912, "GL", "probable_matches", 231, "Bank", "probable_matches", organizedTransactions);
     
     return 0;
 }
