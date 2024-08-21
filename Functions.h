@@ -5,6 +5,7 @@
 #include <list>
 #include <string>
 #include <fstream>
+#include <stdexcept>
 #include "Transaction.h"
 #include "Constants.h"
 #include "json.hpp"
@@ -22,6 +23,7 @@ list<list<Transaction> > matchTransactions(list<Transaction> firstList, list<Tra
 list<list<Transaction> > probableMatchTransactions(list<Transaction> firstList, list<Transaction> secondList);
 list<Transaction> unmatchTransactions(list<Transaction> firstList, list<Transaction> secondList);
 void filterToUnmatched(list<list<Transaction>>& matchingTransactions, list<Transaction>& unmatchedTransactions, list<list<Transaction>>& otherList);
+void filterMultipleToUnmatched(list<list<Transaction>>& matchingTransactions, list<Transaction>& unmatchTransactions, list<list<Transaction>> otherList);
 void display(list<list<Transaction> > matchedTransactions);
 void display(list<Transaction> unmatchedTransactions);
 int countLeapYearDays(int d[]);
@@ -46,6 +48,7 @@ string determineNameOfTheLastList(string listTakenFrom, string listTakenTo, stri
 string determineNameOfTheLastListJson(string listTakenFrom, string listTakenTo, json inputFile);
 void takeOutTransaction(list<list<Transaction>>& listRemovingFrom, list<Transaction>& listAddedto, int idTaken, string tableIdTaken);
 void takeOutTransaction(list<Transaction>& listRemovingFrom, list<Transaction>& listAddedto, int idTaken, string tableIdTaken);
+void reorderListofManuallyMatchedTransactions(list<Transaction>& matchedTrans, list<list<Transaction>> listOfLists);
 void displayJsonInFile(json jsonObject, string nameOfFile);
 void addRelevantTransaction(list<list<Transaction>>& listToAddTo, list<Transaction>& listToRemoveFrom, int idTo, string tableIdTo);
 
