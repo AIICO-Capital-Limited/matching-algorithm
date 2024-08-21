@@ -117,11 +117,11 @@ int main(){
     };
 
     //Operations on both files and json objects
-    // getMatchedProbableMatchAndUnmatched("bank.json", "gl.json", "output.json", "matched_transaction", "probable_matches", "unmatched_transactions");
+    getMatchedProbableMatchAndUnmatched("bank.json", "gl.json", "output.json", "matched_transaction", "probable_matches", "unmatched_transactions");
     // getMatchedProbableMatchAndUnmatchedFromJsonLists(firstList, secondList, "output.json", "matched_transaction", "probable_matches", "unmatched_transactions");
     // repairList(926, "GL", "probable_matches", 542, "Bank", "matched_transaction", "output.json");
     // repairListJson(912, "GL", "probable_matches", 354, "GL", "probable_matches", organizedTransactions);
-    manuallyMatch(690, "GL", "matched_transaction", 392, "Bank", "matched_transaction", "ChangedOutput.json");
+    // manuallyMatch(690, "GL", "matched_transaction", 392, "Bank", "matched_transaction", "ChangedOutput.json");
     // manuallyMatchJson(912, "GL", "probable_matches", 231, "Bank", "probable_matches", organizedTransactions);
     
     return 0;
