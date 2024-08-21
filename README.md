@@ -25,25 +25,25 @@ Additionally, the project uses the Nlohmann JSON library:
 
 The following constants are used throughout the project:
 
-- `const int DAYS_TO_MATCH = 3;`  
+- `const int DAYS_TO_MATCH;`  
   Specifies the number of days required to consider a match.
 
-- `const int PERCENT_TO_MATCH = 69;`  
+- `const int PERCENT_TO_MATCH;`  
   Defines the percentage threshold to determine a match.
 
-- `const int PERCENT_TO_PROB_MATCH = 50;`  
+- `const int PERCENT_TO_PROB_MATCH;`  
   Sets the percentage threshold for a probable match.
 
-- `const string MATCHED_TEXT = "MATCHED";`  
+- `const string MATCHED_TEXT;`  
   The text representation for a confirmed match.
 
-- `const string PROBABLE_TEXT = "PROBABLE";`  
+- `const string PROBABLE_TEXT;`  
   The text representation for a probable match.
 
-- `const string UNMATCHED_TEXT = "UNMATCHED";`  
+- `const string UNMATCHED_TEXT;`  
   The text representation for no match.
 
-- `const string PERCENT_MATCHING_TEXT = "percent_matching";`  
+- `const string PERCENT_MATCHING_TEXT;`  
   The key used to represent the percentage matching in JSON data.
 
 ## Transaction Class
