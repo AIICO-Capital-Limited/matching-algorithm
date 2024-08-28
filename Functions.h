@@ -24869,11 +24869,11 @@ json convertToJsonListOfLists(list<list<Transaction> > Transactions, string name
 json convertToJsonList(list<Transaction> Transaction, string name);
 json makeJsonObject(json firstList, json secondList, json thirdList);
 json getMatchedProbableMatchAndUnmatched(string fileToReadFrom, string secondFileToReadFrom, string fileToOutputTo, string nameForMatchedTransactions, string nameForProbableMacthedTransactions, string nameForUnmatchedTransactions);
-json getMatchedProbableMatchAndUnmatchedFromJsonLists(json firstJsonToReadFrom, json secondJsonToReadFrom, string nameForMatchedTransactions, string nameForProbableMacthedTransactions, string nameForUnmatchedTransactions);
+string getMatchedProbableMatchAndUnmatchedFromJsonLists(string stringFirstJsonToReadFrom, string stringSecondJsonToReadFrom, string nameForMatchedTransactions, string nameForProbableMacthedTransactions, string nameForUnmatchedTransactions);
 json repairList(int idTaken, string tableIdTaken, string listTakenFrom, int idTo, string tableIdTo, string listTakenTo, string inputFile);
-json repairListJson(int idTaken, string tableIdTaken, string listTakenFrom, int idTo, string tableIdTo, string listTakenTo, json inputFile);
+string repairListJson(int idTaken, string tableIdTaken, string listTakenFrom, int idTo, string tableIdTo, string listTakenTo, string input);
 json manuallyMatch(int id1, string tableId1, string list1, int id2, string tableId2, string list2, string input);
-json manuallyMatchJson(int id1, string tableId1, string list1, int id2, string tableId2, string list2, json input);
+string manuallyMatchJson(int id1, string tableId1, string list1, int id2, string tableId2, string list2, string stringInput);
 void readForAdjustments(list<list<Transaction>>& listOfTransactions, string inputFile, string nameOfTable);
 void readForAdjustments(list<Transaction>& listOfTransactions, string nameOfTable, string inputFile);
 void readForAdjustmentsJson(list<list<Transaction>>& listOfTransactions, json jsonObject, string nameOfTable);
@@ -25465,7 +25465,10 @@ json getMatchedProbableMatchAndUnmatched(string firstFileToReadFrom, string seco
     return combinedJsonObject;
 }
 
-json getMatchedProbableMatchAndUnmatchedFromJsonLists(json firstJsonToReadFrom, json secondJsonToReadFrom, string nameForMatchedTransactions, string nameForProbableMacthedTransactions, string nameForUnmatchedTransactions){
+string getMatchedProbableMatchAndUnmatchedFromJsonLists(string stringFirstJsonToReadFrom, string stringSecondJsonToReadFrom, string nameForMatchedTransactions, string nameForProbableMacthedTransactions, string nameForUnmatchedTransactions){
+    json firstJsonToReadFrom = json::parse(stringFirstJsonToReadFrom);
+    json secondJsonToReadFrom = json::parse(stringSecondJsonToReadFrom);
+    
     list<Transaction> firstList;
     list<Transaction> secondList;
     string nameForPercentageMatched = PERCENT_MATCHING_TEXT;
@@ -25486,7 +25489,7 @@ json getMatchedProbableMatchAndUnmatchedFromJsonLists(json firstJsonToReadFrom, 
 
     json combinedJsonObject = makeJsonObject(jsonMatchedTransactions, jsonProbableMatchedTransactions, jsonUnmatchedTransactions);
 
-    return combinedJsonObject;
+    return combinedJsonObject.dump();
 }
 
 void readForAdjustments(list<list<Transaction>>& listOfTransactions, string inputFile, string nameOfTable){
@@ -25847,7 +25850,8 @@ json repairList(int idTaken, string tableIdTaken, string listTakenFrom, int idTo
     }
 }
 
-json repairListJson(int idTaken, string tableIdTaken, string listTakenFrom, int idTo, string tableIdTo, string listTakenTo, json inputFile){
+string repairListJson(int idTaken, string tableIdTaken, string listTakenFrom, int idTo, string tableIdTo, string listTakenTo, string input){
+    json inputFile = json::parse(input);
     string standardizedListTakenFrom = listTakenFrom;
     string standardizedListTakenTo = listTakenTo;
     string nameForPercentMatching = PERCENT_MATCHING_TEXT;
@@ -25884,11 +25888,11 @@ json repairListJson(int idTaken, string tableIdTaken, string listTakenFrom, int 
             if((standardizedListTakenFrom.find(MATCHED_TEXT) != string::npos) && (standardizedListTakenFrom.find(UNMATCHED_TEXT) == string::npos) && (standardizedListTakenFrom.find(PROBABLE_TEXT) == string::npos)){
                 json fullJsonObject = makeJsonObject(newTransactionList1, newTransactionList2, unchangedTransactionList);
 
-                return fullJsonObject;
+                return fullJsonObject.dump();
             }else{
                 json fullJsonObject = makeJsonObject(newTransactionList2, newTransactionList1, unchangedTransactionList);
 
-                return fullJsonObject;
+                return fullJsonObject.dump();
             }
         }else{
             readForAdjustmentsJson(matchingTrans, inputFile, listTakenFrom);
@@ -25915,11 +25919,11 @@ json repairListJson(int idTaken, string tableIdTaken, string listTakenFrom, int 
             if((standardizedListTakenFrom.find(MATCHED_TEXT) != string::npos) && (standardizedListTakenFrom.find(UNMATCHED_TEXT) == string::npos) && (standardizedListTakenFrom.find(PROBABLE_TEXT) == string::npos)){
                 json fullJsonObject = makeJsonObject(newTransactionList1, unchangedTransactionList2, unchangedTransactionList);
 
-                return fullJsonObject;
+                return fullJsonObject.dump();
             }else{
                 json fullJsonObject = makeJsonObject(unchangedTransactionList2, newTransactionList1, unchangedTransactionList);
 
-                return fullJsonObject;
+                return fullJsonObject.dump();
             }
         }
     }else if(standardizedListTakenFrom.find(UNMATCHED_TEXT) != string::npos && standardizedListTakenTo.find(UNMATCHED_TEXT) == string::npos){
@@ -25948,11 +25952,11 @@ json repairListJson(int idTaken, string tableIdTaken, string listTakenFrom, int 
         if((standardizedListTakenTo.find(MATCHED_TEXT) != string::npos) && (standardizedListTakenTo.find(UNMATCHED_TEXT) == string::npos) && (standardizedListTakenTo.find(PROBABLE_TEXT) == string::npos)){
             json fullJsonObject = makeJsonObject(newTransactionList1, unchangedTransactionList, newTransactionList2);
 
-            return fullJsonObject;
+            return fullJsonObject.dump();
         }else{
             json fullJsonObject = makeJsonObject(unchangedTransactionList, newTransactionList1, newTransactionList2);
 
-            return fullJsonObject;
+            return fullJsonObject.dump();
         }
     }else if(standardizedListTakenFrom.find(UNMATCHED_TEXT) == string::npos && standardizedListTakenTo.find(UNMATCHED_TEXT) != string::npos){
         list<Transaction> transactionToBeChanged;
@@ -25982,11 +25986,11 @@ json repairListJson(int idTaken, string tableIdTaken, string listTakenFrom, int 
         if((standardizedListTakenFrom.find(MATCHED_TEXT) != string::npos) && (standardizedListTakenFrom.find(UNMATCHED_TEXT) == string::npos) && (standardizedListTakenFrom.find(PROBABLE_TEXT) == string::npos)){
             json fullJsonObject = makeJsonObject(newTransactionList1, unchangedTransactionList, newTransactionList2);
 
-            return fullJsonObject;
+            return fullJsonObject.dump();
         }else{
             json fullJsonObject = makeJsonObject(unchangedTransactionList, newTransactionList1, newTransactionList2);
 
-            return fullJsonObject;
+            return fullJsonObject.dump();
         }
     }else if(standardizedListTakenFrom.find(UNMATCHED_TEXT) != string::npos && standardizedListTakenTo.find(UNMATCHED_TEXT) != string::npos){
         list<Transaction> transactionsToBeChanged;
@@ -26013,11 +26017,11 @@ json repairListJson(int idTaken, string tableIdTaken, string listTakenFrom, int 
             if((standardizedLastList1.find(MATCHED_TEXT) != string::npos) && (standardizedLastList1.find(UNMATCHED_TEXT) == string::npos) && (standardizedLastList1.find(PROBABLE_TEXT) == string::npos)){
                 json fullJsonObject = makeJsonObject(unchangedTransactionList1, unchangedTransactionList2, newTransactionList1);
 
-                return fullJsonObject;
+                return fullJsonObject.dump();
             }else{
                 json fullJsonObject = makeJsonObject(unchangedTransactionList2, unchangedTransactionList1, newTransactionList1);
 
-                return fullJsonObject;
+                return fullJsonObject.dump();
             }
     }
 }
@@ -26407,7 +26411,8 @@ json manuallyMatch(int id1, string tableId1, string list1, int id2, string table
     }
 }
 
-json manuallyMatchJson(int id1, string tableId1, string list1, int id2, string tableId2, string list2, json input){
+string manuallyMatchJson(int id1, string tableId1, string list1, int id2, string tableId2, string list2, string stringInput){
+    json input = json::parse(stringInput);
     if(tableId1.compare(tableId2) != 0){
         string standardizedList1 = list1;
         string standardizedList2 = list2;
@@ -26456,7 +26461,7 @@ json manuallyMatchJson(int id1, string tableId1, string list1, int id2, string t
 
                         json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchTransactions, newUnmatchedTransactions);
                         displayJsonInFile(fullObject, nameOfOutputFile);
-                        return fullObject;
+                        return fullObject.dump();
                     }else{
                         secondList.push_back(newMatchedList);
 
@@ -26466,7 +26471,7 @@ json manuallyMatchJson(int id1, string tableId1, string list1, int id2, string t
 
                         json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchTransactions, newUnmatchedTransactions);
                         displayJsonInFile(fullObject, nameOfOutputFile);
-                        return fullObject;
+                        return fullObject.dump();
                     }
                 }else if(firstList.size() <= 1 && secondList.size() > 1){
                     if(secondList.front().front().getTableId().compare(secondList.back().front().getTableId()) == 0){
@@ -26494,7 +26499,7 @@ json manuallyMatchJson(int id1, string tableId1, string list1, int id2, string t
 
                         json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchTransactions, newUnmatchedTransactions);
                         displayJsonInFile(fullObject, nameOfOutputFile);
-                        return fullObject;
+                        return fullObject.dump();
                     }else{
                         secondList.push_back(newMatchedList);
 
@@ -26504,7 +26509,7 @@ json manuallyMatchJson(int id1, string tableId1, string list1, int id2, string t
 
                         json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchTransactions, newUnmatchedTransactions);
                         displayJsonInFile(fullObject, nameOfOutputFile);
-                        return fullObject;
+                        return fullObject.dump();
                     }
                 }else if(firstList.size() > 1 && secondList.size() <= 1){
                     if(firstList.front().front().getTableId().compare(firstList.back().front().getTableId()) == 0){
@@ -26532,7 +26537,7 @@ json manuallyMatchJson(int id1, string tableId1, string list1, int id2, string t
 
                         json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchTransactions, newUnmatchedTransactions);
                         displayJsonInFile(fullObject, nameOfOutputFile);
-                        return fullObject;
+                        return fullObject.dump();
                     }else{
                         secondList.push_back(newMatchedList);
 
@@ -26542,7 +26547,7 @@ json manuallyMatchJson(int id1, string tableId1, string list1, int id2, string t
 
                         json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchTransactions, newUnmatchedTransactions);
                         displayJsonInFile(fullObject, nameOfOutputFile);
-                        return fullObject;
+                        return fullObject.dump();
                     }
                 }else if(firstList.size() == 1 && secondList.size() == 1){
 
@@ -26565,7 +26570,7 @@ json manuallyMatchJson(int id1, string tableId1, string list1, int id2, string t
 
                         json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchTransactions, newUnmatchedTransactions);
                         displayJsonInFile(fullObject, nameOfOutputFile);
-                        return fullObject;
+                        return fullObject.dump();
                     }else{
                         secondList.push_back(newMatchedList);
 
@@ -26575,7 +26580,7 @@ json manuallyMatchJson(int id1, string tableId1, string list1, int id2, string t
 
                         json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchTransactions, newUnmatchedTransactions);
                         displayJsonInFile(fullObject, nameOfOutputFile);
-                        return fullObject;
+                        return fullObject.dump();
                     }
                 }
             }else{
@@ -26617,7 +26622,7 @@ json manuallyMatchJson(int id1, string tableId1, string list1, int id2, string t
 
                     json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchedTransactions, newUnmatchedTransactions);
                     displayJsonInFile(fullObject, nameOfOutputFile);
-                    return fullObject;
+                    return fullObject.dump();
                 }else{
                     unchangedList1.push_back(newMatchedList);
 
@@ -26627,7 +26632,7 @@ json manuallyMatchJson(int id1, string tableId1, string list1, int id2, string t
 
                     json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchedTransactions, newUnmatchedTransactions);
                     displayJsonInFile(fullObject, nameOfOutputFile);
-                    return fullObject;
+                    return fullObject.dump();
                 }
             }
         }else if((standardizedList1.find(UNMATCHED_TEXT) != string::npos) && (standardizedList2.find(UNMATCHED_TEXT) == string::npos)){
@@ -26672,7 +26677,7 @@ json manuallyMatchJson(int id1, string tableId1, string list1, int id2, string t
 
                 json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchedTransactions, newUnmatchedTransactions);
                 displayJsonInFile(fullObject, nameOfOutputFile);
-                return fullObject;
+                return fullObject.dump();
             }else{
                 unchangedList.push_back(newMatchedList);
 
@@ -26682,7 +26687,7 @@ json manuallyMatchJson(int id1, string tableId1, string list1, int id2, string t
 
                 json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchedTransactions, newUnmatchedTransactions);
                 displayJsonInFile(fullObject, nameOfOutputFile);
-                return fullObject;
+                return fullObject.dump();
             }
         }else if((standardizedList1.find(UNMATCHED_TEXT) == string::npos) && (standardizedList2.find(UNMATCHED_TEXT) != string::npos)){
             list<Transaction> newMatchedList;
@@ -26726,7 +26731,7 @@ json manuallyMatchJson(int id1, string tableId1, string list1, int id2, string t
 
                 json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchTransactions, newUnmatchedTransactions);
                 displayJsonInFile(fullObject, nameOfOutputFile);
-                return fullObject;
+                return fullObject.dump();
             }else{
                 unchangedlist.push_back(newMatchedList);
 
@@ -26736,7 +26741,7 @@ json manuallyMatchJson(int id1, string tableId1, string list1, int id2, string t
 
                 json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchTransactions, newUnmatchedTransactions);
                 displayJsonInFile(fullObject, nameOfOutputFile);
-                return fullObject;
+                return fullObject.dump();
             }
         }else if((standardizedList1.find(UNMATCHED_TEXT) != string::npos) && (standardizedList2.find(UNMATCHED_TEXT) != string::npos)){
             list<Transaction> newMatchedList;
@@ -26774,7 +26779,7 @@ json manuallyMatchJson(int id1, string tableId1, string list1, int id2, string t
 
                 json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchTransactions, newUnmatchedTransactions);
                 displayJsonInFile(fullObject, nameOfOutputFile);
-                return fullObject;
+                return fullObject.dump();
             }else{
                 unchangedList2.push_back(newMatchedList);
 
@@ -26784,7 +26789,7 @@ json manuallyMatchJson(int id1, string tableId1, string list1, int id2, string t
 
                 json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchTransactions, newUnmatchedTransactions);
                 displayJsonInFile(fullObject, nameOfOutputFile);
-                return fullObject;
+                return fullObject.dump();
             }
         }
     }else{
