@@ -24780,7 +24780,7 @@ using json = nlohmann::json;
 
 //Constants
 const int DAYS_TO_MATCH = 3;
-const int PERCENT_TO_MATCH = 69;
+const int PERCENT_TO_MATCH = 100;
 const int PERCENT_TO_PROB_MATCH = 50;
 const string MATCHED_TEXT = "MATCHED";
 const string PROBABLE_TEXT = "PROBABLE";
@@ -24791,24 +24791,28 @@ const string PERCENT_MATCHING_TEXT = "percent_matching";
 class Transaction {
     private:
     int id;
-    double value;
+    double balance;
+    double debit;
+    double credit;
     string date;
     string narration;
     string tableId;
 
     public:
-    Transaction(int id, double value, string date, string narration, string tableId){
+    Transaction(int id, double balance, string date, string narration, string tableId, double debit, double credit){
         Transaction::id = id;
-        Transaction::value = value;
+        Transaction::balance = balance;
         Transaction::date = date;
         Transaction::narration = narration;
         Transaction::tableId = tableId;
+        Transaction::debit = debit;
+        Transaction::credit = credit;
     };
     int getId(){
         return Transaction::id;
     };
-    double getVal(){
-        return Transaction::value;
+    double getBalance(){
+        return Transaction::balance;
     };
     string getDate(){
         return Transaction::date;
@@ -24819,17 +24823,25 @@ class Transaction {
     string getTableId(){
         return Transaction::tableId;
     };
+    double getDebit(){
+        return Transaction::debit;
+    };
+    double getCredit(){
+        return Transaction::credit;
+    }
     void toString(){
         cout << "{" << ends;
         cout << "id:  " << Transaction::id << ", "<< ends;
-        cout << "value: " << Transaction::value << ", " << ends;
+        cout << "debit: " << Transaction::debit << ", " << ends;
+        cout << "credit: " << Transaction::credit << ", " << ends;
+        cout << "balance: " << Transaction::balance << ", " << ends;
         cout << "date: " << Transaction::date << ", " << ends;
         cout << "narration: " << Transaction::narration << ", " << ends;
         cout << "table ID: " << Transaction::tableId << ends;
         cout << "}" << ends;
     };
     json toJson() const{
-        return json{{"id", Transaction::id}, {"value", Transaction::value}, {"date", Transaction::date}, {"narration", Transaction::narration}, {"table_ID", Transaction::tableId}};
+        return json{{"id", Transaction::id}, {"balance", Transaction::balance}, {"date", Transaction::date}, {"narration", Transaction::narration}, {"table_ID", Transaction::tableId}, {"debit", Transaction::debit}, {"credit", Transaction::credit}};
     };
 };
 
@@ -24839,7 +24851,8 @@ double withinDateRange(string date1, string date2);
 double relatedNarration(string narration, string narration2);
 double averagePercentMatching(list<Transaction> matchingTransactions);
 bool isMatched(Transaction transaction1, Transaction transaction2, int percentToMatch);
-list<list<Transaction> > matchTransactions(list<Transaction> firstList, list<Transaction>& secondList);
+bool isMatchedForMatching(Transaction transaction1, Transaction transaction2, int percentToMatch);
+list<list<Transaction> > matchTransactions(list<Transaction> firstList, list<Transaction> secondList);
 list<list<Transaction> > probableMatchTransactions(list<Transaction> firstList, list<Transaction> secondList);
 list<Transaction> unmatchTransactions(list<Transaction> firstList, list<Transaction> secondList);
 void filterToUnmatched(list<list<Transaction>>& matchingTransactions, list<Transaction>& unmatchedTransactions, list<list<Transaction>>& otherList);
@@ -24849,6 +24862,7 @@ void display(list<Transaction> unmatchedTransactions);
 int countLeapYearDays(int d[]);
 list<string> splitString(string sentence, char separator);
 double percentMatching(Transaction transaction1, Transaction transaction2);
+double percentMatchingForMatching(Transaction transaction1, Transaction transaction2);
 void readJsonFile(list<Transaction>& listOfTransaction, string nameOfFile);
 void readJsonArray(list<Transaction>& listOfTransactions, const json& jsonArray);
 json convertToJsonListOfLists(list<list<Transaction> > Transactions, string name, string nameForPercentMatching);
@@ -24869,11 +24883,12 @@ string determineNameOfTheLastListJson(string listTakenFrom, string listTakenTo, 
 void takeOutTransaction(list<list<Transaction>>& listRemovingFrom, list<Transaction>& listAddedto, int idTaken, string tableIdTaken);
 void takeOutTransaction(list<Transaction>& listRemovingFrom, list<Transaction>& listAddedto, int idTaken, string tableIdTaken);
 void reorderListofManuallyMatchedTransactions(list<Transaction>& matchedTrans, list<list<Transaction>> listOfLists);
+void reorderListofManuallyMatchedTransactionsWithSecond(list<Transaction>& matchedTrans, list<list<Transaction>> listOfLists);
 void displayJsonInFile(json jsonObject, string nameOfFile);
 void addRelevantTransaction(list<list<Transaction>>& listToAddTo, list<Transaction>& listToRemoveFrom, int idTo, string tableIdTo);
 
 //Function Definitions
-list<list<Transaction> > matchTransactions(list<Transaction> firstList, list<Transaction>& secondList){
+list<list<Transaction> > matchTransactions(list<Transaction> firstList, list<Transaction> secondList){
     list<list<Transaction> > matchingTrans;
     list<Transaction> transactionsThatHaveMatches;
     list<Transaction> transactionsThatMatched;
@@ -24892,7 +24907,7 @@ list<list<Transaction> > matchTransactions(list<Transaction> firstList, list<Tra
         for(auto itr2 = begin(secondList); itr2 != end(secondList); itr2++){
             bool alreadyMatched = false;
             for(auto itr3 = begin(transactionsThatMatched); itr3 != end(transactionsThatMatched); itr3++){
-                if(isMatched(*itr2, *itr3, 100)){
+                if(isMatchedForMatching(*itr2, *itr3, 100)){
                     alreadyMatched = true;
                     break;
                 }
@@ -24901,7 +24916,6 @@ list<list<Transaction> > matchTransactions(list<Transaction> firstList, list<Tra
             if(!alreadyMatched && isMatched(*itr, *itr2, PERCENT_TO_MATCH)){
                 subMatches.push_back(*itr2);
                 transactionsThatMatched.push_back(*itr2);
-                itr2 = secondList.erase(itr2);
             }
         }
         matchingTrans.push_back(subMatches);
@@ -24914,6 +24928,7 @@ list<list<Transaction> > matchTransactions(list<Transaction> firstList, list<Tra
                     if(percentMatching(itr->front(), *itr3) > percentMatching(itr2->front(), *itr3)){
                         itr->push_back(*itr3);
                         itr3 = itr2->erase(itr3);
+                        --itr3;
                     }
                 }
             }
@@ -24942,7 +24957,7 @@ list<list<Transaction> > probableMatchTransactions(list<Transaction> firstList, 
         for(auto itr2 = begin(secondList); itr2 != end(secondList); itr2++){
             bool alreadyMatched = false;
             for(auto itr3 = begin(transactionsThatMatched); itr3 != end(transactionsThatMatched); itr3++){
-                if(isMatched(*itr2, *itr3, 100)){
+                if(isMatchedForMatching(*itr2, *itr3, 100)){
                     alreadyMatched = true;
                     break;
                 }
@@ -24964,11 +24979,80 @@ list<list<Transaction> > probableMatchTransactions(list<Transaction> firstList, 
                     if(percentMatching(itr->front(), *itr3) > percentMatching(itr2->front(), *itr3)){
                         itr->push_back(*itr3);
                         itr3 = itr2->erase(itr3);
+                        --itr3;
                     }
                 }
             }
         }
     }
+
+    list<list<Transaction> > matchingTrans;
+    list<Transaction> transactionsThatHaveMatches2;
+    list<Transaction> transactionsThatMatched2;
+    for(auto Itr = begin(firstList); Itr != end(firstList); Itr++){
+        for(auto Itr2 = begin(secondList); Itr2 != end(secondList); Itr2++){
+            if(isMatched(*Itr, *Itr2, PERCENT_TO_MATCH)){
+                transactionsThatHaveMatches2.push_back(*Itr);
+                break;
+            }
+        }
+    }
+
+    for(auto itr = begin(transactionsThatHaveMatches2); itr != end(transactionsThatHaveMatches2); itr++){
+        list<Transaction> subMatches;
+        subMatches.push_back(*itr);
+        for(auto itr2 = begin(secondList); itr2 != end(secondList); itr2++){
+            bool alreadyMatched = false;
+            for(auto itr3 = begin(transactionsThatMatched2); itr3 != end(transactionsThatMatched2); itr3++){
+                if(isMatchedForMatching(*itr2, *itr3, 100)){
+                    alreadyMatched = true;
+                    break;
+                }
+            }
+
+            if(!alreadyMatched && isMatched(*itr, *itr2, PERCENT_TO_MATCH)){
+                subMatches.push_back(*itr2);
+                transactionsThatMatched2.push_back(*itr2);
+            }
+        }
+        matchingTrans.push_back(subMatches);
+    }
+
+    for(auto itr = begin(matchingTrans); itr != end(matchingTrans); itr++){
+        for(auto itr2 = begin(matchingTrans); itr2 != end(matchingTrans); itr2++){
+            for(auto itr3 = begin(*itr2); itr3 != end(*itr2); itr3++){
+                if(itr3 != begin(*itr2)){
+                    if(percentMatching(itr->front(), *itr3) > percentMatching(itr2->front(), *itr3)){
+                        itr->push_back(*itr3);
+                        itr3 = itr2->erase(itr3);
+                        --itr3;
+                    }
+                }
+            }
+        }
+    }
+
+    for(auto itr = begin(probableMatchTrans); itr != end(probableMatchTrans); itr++){
+        for(auto itr2 = begin(*itr); itr2 != end(*itr); itr2++){
+            if(itr2 != begin(*itr)){
+                bool isAlreadyMatched = false;
+
+                for(auto itr3 = begin(matchingTrans); itr3 != end(matchingTrans); itr3++){
+                    for(auto itr4 = begin(*itr3); itr4 != end(*itr3); itr4++){
+                        if(isMatchedForMatching(*itr2, *itr4, 100)){
+                            isAlreadyMatched = true;
+                        }
+                    }
+                }
+
+                if(isAlreadyMatched){
+                    itr2 = itr->erase(itr2);
+                    --itr2;
+                }
+            }
+        }
+    }
+
 
     return probableMatchTrans;
 }
@@ -25161,7 +25245,30 @@ double percentMatching(Transaction transaction1, Transaction transaction2){
     double percentOfNarrMatch;
     double matchPercent;
     
-    if(transaction1.getVal() == transaction2.getVal()){
+    if((transaction1.getDebit() == transaction2.getCredit()) && (transaction1.getCredit() == transaction2.getDebit())){
+        percentOfValMatch = 100.0;
+    }
+
+    percentOfDateMatch = withinDateRange(transaction1.getDate(), transaction2.getDate());
+
+    percentOfNarrMatch = relatedNarration(transaction1.getNarration(), transaction2.getNarration());
+
+    matchPercent = (percentOfValMatch + percentOfDateMatch + percentOfNarrMatch) / 3.0;
+
+    return matchPercent;
+}
+
+bool isMatchedForMatching(Transaction transaction1, Transaction transaction2, int percentToMatch){
+    return (percentMatchingForMatching(transaction1, transaction2) >= percentToMatch);
+}
+
+double percentMatchingForMatching(Transaction transaction1, Transaction transaction2){
+    double percentOfValMatch;
+    double percentOfDateMatch;
+    double percentOfNarrMatch;
+    double matchPercent;
+    
+    if((transaction1.getDebit() == transaction2.getDebit()) && (transaction1.getCredit() == transaction2.getCredit())){
         percentOfValMatch = 100.0;
     }
 
@@ -25197,7 +25304,7 @@ void filterToUnmatched(list<list<Transaction>>& matchingTransactions, list<Trans
         if(itr->size() == 1){
             for(auto itr2 = begin(otherList); itr2 != end(otherList); itr2++){
                 for(auto itr3 = begin(*itr2); itr3 != end(*itr2); itr3++){
-                    if(isMatched(itr->front(), *itr3, 100)){
+                    if(isMatchedForMatching(itr->front(), *itr3, 100)){
                         exists = true;
                     }
                 }
@@ -25240,30 +25347,51 @@ void filterMultipleToUnmatched(list<list<Transaction>>& matchingTransactions, li
     }
 }
 
+void filterMultipleToUnmatchedWithSecond(list<list<Transaction>>& matchingTransactions, list<Transaction>& unmatchTransactions, list<list<Transaction>> otherList){
+    for(auto itr = begin(matchingTransactions); itr != end(matchingTransactions); itr++){
+        if(itr->front().getTableId().compare(otherList.front().front().getTableId()) != 0){
+            for(auto itr2 = begin(*itr); itr2 != end(*itr); itr2++){
+                unmatchTransactions.push_back(*itr2);
+            }
+
+            itr = matchingTransactions.erase(itr);
+            if(itr != begin(matchingTransactions)){
+                --itr;
+            }else{
+                itr--;
+            }
+        }
+    }
+}
+
 void readJsonFile(list<Transaction>& listOfTransaction, string nameOfFile){
     ifstream jsonFile(nameOfFile);
     json dataFromJson;
     jsonFile >> dataFromJson;
     for(const auto& data : dataFromJson["data"]){
         int id = data["id"];
-        double value = data["value"];
+        double balance = data["balance"];
+        double debit = data["debit"];
+        double credit = data["credit"];
         string date = data["date"];
         string narration = data["narration"];
         string tableId = dataFromJson["type"];
 
-        listOfTransaction.push_back(Transaction(id, value, date, narration, tableId));
+        listOfTransaction.push_back(Transaction(id, balance, date, narration, tableId, debit, credit));
     }
 }
 
 void readJsonArray(list<Transaction>& listOfTransactions, const json& jsonArray){
     for(const auto& data : jsonArray["data"]){
         int id = data["id"];
-        double value = data["value"];
+        double balance = data["balance"];
+        double debit = data["debit"];
+        double credit = data["credit"];
         string date = data["date"];
         string narration = data["narration"];
         string tableId = jsonArray["type"];
 
-        listOfTransactions.push_back(Transaction(id, value, date, narration, tableId));
+        listOfTransactions.push_back(Transaction(id, balance, date, narration, tableId, debit, credit));
     }
 }
 
@@ -25376,9 +25504,11 @@ void readForAdjustments(list<list<Transaction>>& listOfTransactions, string inpu
                 int id = data2["id"];
                 string narration = data2["narration"];
                 string tableId = data2["table_ID"];
-                double value = data2["value"];
+                double balance = data2["balance"];
+                double debit = data2["debit"];
+                double credit = data2["credit"];
 
-                matchingTransactionGroups.push_back(Transaction(id, value, date, narration, tableId));
+                matchingTransactionGroups.push_back(Transaction(id, balance, date, narration, tableId, debit, credit));
             }
         }
         listOfTransactions.push_back(matchingTransactionGroups);
@@ -25395,9 +25525,11 @@ void readForAdjustments(list<Transaction>& listOfTransactions, string nameOfTabl
         int id = data["id"];
         string narration = data["narration"];
         string tableId = data["table_ID"];
-        double value = data["value"];
+        double balance = data["balance"];
+        double debit = data["debit"];
+        double credit = data["credit"];
 
-        listOfTransactions.push_back(Transaction(id, value, date, narration, tableId));
+        listOfTransactions.push_back(Transaction(id, balance, date, narration, tableId, debit, credit));
     }
 }
 
@@ -25412,9 +25544,11 @@ void readForAdjustmentsJson(list<list<Transaction>>& listOfTransactions, json js
                 int id = data2["id"];
                 string narration = data2["narration"];
                 string tableId = data2["table_ID"];
-                double value = data2["value"];
+                double balance = data2["balance"];
+                double debit = data2["debit"];
+                double credit = data2["credit"];
 
-                matchingTransactionGroups.push_back(Transaction(id, value, date, narration, tableId));
+                matchingTransactionGroups.push_back(Transaction(id, balance, date, narration, tableId, debit, credit));
             }
         }
         listOfTransactions.push_back(matchingTransactionGroups);
@@ -25427,9 +25561,11 @@ void readForAdjustmentsJson(list<Transaction>& listOfTransactions, string nameOf
         int id = data["id"];
         string narration = data["narration"];
         string tableId = data["table_ID"];
-        double value = data["value"];
+        double balance = data["balance"];
+        double debit = data["debit"];
+        double credit = data["credit"];
 
-        listOfTransactions.push_back(Transaction(id, value, date, narration, tableId));
+        listOfTransactions.push_back(Transaction(id, balance, date, narration, tableId, debit, credit));
     }
 }
 
@@ -25487,6 +25623,16 @@ void takeOutTransaction(list<Transaction>& listRemovingFrom, list<Transaction>& 
 
 void reorderListofManuallyMatchedTransactions(list<Transaction>& matchedTrans, list<list<Transaction>> listOfLists){
     if(matchedTrans.front().getTableId().compare(listOfLists.front().front().getTableId()) != 0){
+        Transaction secondTransaction = matchedTrans.front();
+        for(auto itr = begin(matchedTrans); itr != end(matchedTrans); itr++){
+            itr = matchedTrans.erase(itr);
+        }
+        matchedTrans.push_back(secondTransaction);
+    }
+}
+
+void reorderListofManuallyMatchedTransactionsWithSecond(list<Transaction>& matchedTrans, list<list<Transaction>> listOfLists){
+    if(matchedTrans.front().getTableId().compare((*next(listOfLists.begin())).front().getTableId()) != 0){
         Transaction secondTransaction = matchedTrans.front();
         for(auto itr = begin(matchedTrans); itr != end(matchedTrans); itr++){
             itr = matchedTrans.erase(itr);
@@ -25898,45 +26044,154 @@ json manuallyMatch(int id1, string tableId1, string list1, int id2, string table
                 readForAdjustments(secondList, input, list2);
                 takeOutTransaction(secondList, newMatchedList, id2, tableId2);
 
-                if(firstList.front().front().getTableId().compare(firstList.end()->front().getTableId()) == 0){
-                    reorderListofManuallyMatchedTransactions(newMatchedList, firstList);
-                }else{
-                    reorderListofManuallyMatchedTransactions(newMatchedList, secondList);
-                }
+                if(firstList.size() > 1 && secondList.size() > 1){
 
-                string lastList = determineNameOfTheLastList(list1, list2, input);
-                list<Transaction> unchangedList;
-                readForAdjustments(unchangedList, lastList, input);
+                    if(firstList.front().front().getTableId().compare(firstList.back().front().getTableId()) == 0){
+                        reorderListofManuallyMatchedTransactions(newMatchedList, firstList);
+                    }else{
+                        reorderListofManuallyMatchedTransactions(newMatchedList, secondList);
+                    }
 
-                filterToUnmatched(firstList, unchangedList, secondList);
-                filterToUnmatched(secondList, unchangedList, firstList);
+                    string lastList = determineNameOfTheLastList(list1, list2, input);
+                    list<Transaction> unchangedList;
+                    readForAdjustments(unchangedList, lastList, input);
 
-                if(firstList.front().front().getTableId().compare(firstList.end()->front().getTableId()) == 0){
-                    filterMultipleToUnmatched(secondList, unchangedList, firstList);
-                }else{
-                    filterMultipleToUnmatched(firstList, unchangedList, secondList);
-                }
+                    filterMultipleToUnmatched(firstList, unchangedList, list<list<Transaction>>(1, newMatchedList));
+                    filterMultipleToUnmatched(secondList, unchangedList, list<list<Transaction>>(1, newMatchedList));
 
-                if((standardizedList1.find(MATCHED_TEXT) != string::npos) && (standardizedList1.find(UNMATCHED_TEXT) == string::npos) && (standardizedList1.find(PROBABLE_TEXT) == string::npos)){
-                    firstList.push_back(newMatchedList);
+                    filterToUnmatched(firstList, unchangedList, secondList);
+                    filterToUnmatched(secondList, unchangedList, firstList);
 
-                    json newMatchedTransactions = convertToJsonListOfLists(firstList, list1, nameForPercentMatching);
-                    json newProbMatchTransactions = convertToJsonListOfLists(secondList, list2, nameForPercentMatching);
-                    json newUnmatchedTransactions = convertToJsonList(unchangedList, lastList);
+                    if((standardizedList1.find(MATCHED_TEXT) != string::npos) && (standardizedList1.find(UNMATCHED_TEXT) == string::npos) && (standardizedList1.find(PROBABLE_TEXT) == string::npos)){
+                        firstList.push_back(newMatchedList);
 
-                    json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchTransactions, newUnmatchedTransactions);
-                    displayJsonInFile(fullObject, nameOfOutputFile);
-                    return fullObject;
-                }else{
-                    secondList.push_back(newMatchedList);
+                        json newMatchedTransactions = convertToJsonListOfLists(firstList, list1, nameForPercentMatching);
+                        json newProbMatchTransactions = convertToJsonListOfLists(secondList, list2, nameForPercentMatching);
+                        json newUnmatchedTransactions = convertToJsonList(unchangedList, lastList);
 
-                    json newMatchedTransactions = convertToJsonListOfLists(secondList, list2, nameForPercentMatching);
-                    json newProbMatchTransactions = convertToJsonListOfLists(firstList, list1, nameForPercentMatching);
-                    json newUnmatchedTransactions = convertToJsonList(unchangedList, lastList);
+                        json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchTransactions, newUnmatchedTransactions);
+                        displayJsonInFile(fullObject, nameOfOutputFile);
+                        return fullObject;
+                    }else{
+                        secondList.push_back(newMatchedList);
 
-                    json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchTransactions, newUnmatchedTransactions);
-                    displayJsonInFile(fullObject, nameOfOutputFile);
-                    return fullObject;
+                        json newMatchedTransactions = convertToJsonListOfLists(secondList, list2, nameForPercentMatching);
+                        json newProbMatchTransactions = convertToJsonListOfLists(firstList, list1, nameForPercentMatching);
+                        json newUnmatchedTransactions = convertToJsonList(unchangedList, lastList);
+
+                        json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchTransactions, newUnmatchedTransactions);
+                        displayJsonInFile(fullObject, nameOfOutputFile);
+                        return fullObject;
+                    }
+                }else if(firstList.size() <= 1 && secondList.size() > 1){
+                    if(secondList.front().front().getTableId().compare(secondList.back().front().getTableId()) == 0){
+                        reorderListofManuallyMatchedTransactions(newMatchedList, secondList);
+                    }else{
+                        reorderListofManuallyMatchedTransactions(newMatchedList, firstList);
+                    }
+
+                    string lastList = determineNameOfTheLastList(list1, list2, input);
+                    list<Transaction> unchangedList;
+                    readForAdjustments(unchangedList, lastList, input);
+
+                    filterMultipleToUnmatched(firstList, unchangedList, list<list<Transaction>>(1, newMatchedList));
+                    filterMultipleToUnmatched(secondList, unchangedList, list<list<Transaction>>(1, newMatchedList));
+
+                    filterToUnmatched(firstList, unchangedList, secondList);
+                    filterToUnmatched(secondList, unchangedList, firstList);
+
+                    if((standardizedList1.find(MATCHED_TEXT) != string::npos) && (standardizedList1.find(UNMATCHED_TEXT) == string::npos) && (standardizedList1.find(PROBABLE_TEXT) == string::npos)){
+                        firstList.push_back(newMatchedList);
+
+                        json newMatchedTransactions = convertToJsonListOfLists(firstList, list1, nameForPercentMatching);
+                        json newProbMatchTransactions = convertToJsonListOfLists(secondList, list2, nameForPercentMatching);
+                        json newUnmatchedTransactions = convertToJsonList(unchangedList, lastList);
+
+                        json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchTransactions, newUnmatchedTransactions);
+                        displayJsonInFile(fullObject, nameOfOutputFile);
+                        return fullObject;
+                    }else{
+                        secondList.push_back(newMatchedList);
+
+                        json newMatchedTransactions = convertToJsonListOfLists(secondList, list2, nameForPercentMatching);
+                        json newProbMatchTransactions = convertToJsonListOfLists(firstList, list1, nameForPercentMatching);
+                        json newUnmatchedTransactions = convertToJsonList(unchangedList, lastList);
+
+                        json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchTransactions, newUnmatchedTransactions);
+                        displayJsonInFile(fullObject, nameOfOutputFile);
+                        return fullObject;
+                    }
+                }else if(firstList.size() > 1 && secondList.size() <= 1){
+                    if(firstList.front().front().getTableId().compare(firstList.back().front().getTableId()) == 0){
+                        reorderListofManuallyMatchedTransactions(newMatchedList, firstList);
+                    }else{
+                        reorderListofManuallyMatchedTransactions(newMatchedList, secondList);
+                    }
+
+                    string lastList = determineNameOfTheLastList(list1, list2, input);
+                    list<Transaction> unchangedList;
+                    readForAdjustments(unchangedList, lastList, input);
+
+                    filterMultipleToUnmatched(firstList, unchangedList, list<list<Transaction>>(1, newMatchedList));
+                    filterMultipleToUnmatched(secondList, unchangedList, list<list<Transaction>>(1, newMatchedList));
+
+                    filterToUnmatched(firstList, unchangedList, secondList);
+                    filterToUnmatched(secondList, unchangedList, firstList);
+
+                    if((standardizedList1.find(MATCHED_TEXT) != string::npos) && (standardizedList1.find(UNMATCHED_TEXT) == string::npos) && (standardizedList1.find(PROBABLE_TEXT) == string::npos)){
+                        firstList.push_back(newMatchedList);
+
+                        json newMatchedTransactions = convertToJsonListOfLists(firstList, list1, nameForPercentMatching);
+                        json newProbMatchTransactions = convertToJsonListOfLists(secondList, list2, nameForPercentMatching);
+                        json newUnmatchedTransactions = convertToJsonList(unchangedList, lastList);
+
+                        json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchTransactions, newUnmatchedTransactions);
+                        displayJsonInFile(fullObject, nameOfOutputFile);
+                        return fullObject;
+                    }else{
+                        secondList.push_back(newMatchedList);
+
+                        json newMatchedTransactions = convertToJsonListOfLists(secondList, list2, nameForPercentMatching);
+                        json newProbMatchTransactions = convertToJsonListOfLists(firstList, list1, nameForPercentMatching);
+                        json newUnmatchedTransactions = convertToJsonList(unchangedList, lastList);
+
+                        json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchTransactions, newUnmatchedTransactions);
+                        displayJsonInFile(fullObject, nameOfOutputFile);
+                        return fullObject;
+                    }
+                }else if(firstList.size() == 1 && secondList.size() == 1){
+
+                    string lastList = determineNameOfTheLastList(list1, list2, input);
+                    list<Transaction> unchangedList;
+                    readForAdjustments(unchangedList, lastList, input);
+
+                    filterMultipleToUnmatched(firstList, unchangedList, list<list<Transaction>>(1, newMatchedList));
+                    filterMultipleToUnmatched(secondList, unchangedList, list<list<Transaction>>(1, newMatchedList));
+
+                    filterToUnmatched(firstList, unchangedList, secondList);
+                    filterToUnmatched(secondList, unchangedList, firstList);
+
+                    if((standardizedList1.find(MATCHED_TEXT) != string::npos) && (standardizedList1.find(UNMATCHED_TEXT) == string::npos) && (standardizedList1.find(PROBABLE_TEXT) == string::npos)){
+                        firstList.push_back(newMatchedList);
+
+                        json newMatchedTransactions = convertToJsonListOfLists(firstList, list1, nameForPercentMatching);
+                        json newProbMatchTransactions = convertToJsonListOfLists(secondList, list2, nameForPercentMatching);
+                        json newUnmatchedTransactions = convertToJsonList(unchangedList, lastList);
+
+                        json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchTransactions, newUnmatchedTransactions);
+                        displayJsonInFile(fullObject, nameOfOutputFile);
+                        return fullObject;
+                    }else{
+                        secondList.push_back(newMatchedList);
+
+                        json newMatchedTransactions = convertToJsonListOfLists(secondList, list2, nameForPercentMatching);
+                        json newProbMatchTransactions = convertToJsonListOfLists(firstList, list1, nameForPercentMatching);
+                        json newUnmatchedTransactions = convertToJsonList(unchangedList, lastList);
+
+                        json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchTransactions, newUnmatchedTransactions);
+                        displayJsonInFile(fullObject, nameOfOutputFile);
+                        return fullObject;
+                    }
                 }
             }else{
                 list<list<Transaction>> firstList;
@@ -25948,13 +26203,24 @@ json manuallyMatch(int id1, string tableId1, string list1, int id2, string table
                 list<list<Transaction>> unchangedList1;
                 readForAdjustments(unchangedList1, input, lastList1);
 
-                reorderListofManuallyMatchedTransactions(newMatchedList, unchangedList1);
+                if(unchangedList1.size() > 0){
+                    reorderListofManuallyMatchedTransactions(newMatchedList, unchangedList1);
+                }else if(unchangedList1.size() == 0 && firstList.size() > 2){
+                    if(firstList.front().front().getTableId().compare(firstList.back().front().getTableId()) == 0){
+                        reorderListofManuallyMatchedTransactions(newMatchedList, firstList);
+                    }else{
+                        reorderListofManuallyMatchedTransactionsWithSecond(newMatchedList, firstList);
+                    }
+                }
 
                 string lastList2 = determineNameOfTheLastList(list1, lastList1, input);
                 list<Transaction> unchangedList2;
                 readForAdjustments(unchangedList2, lastList2, input);
 
-                filterMultipleToUnmatched(firstList, unchangedList2, unchangedList1);
+                filterMultipleToUnmatched(firstList, unchangedList2, list<list<Transaction>>(1, newMatchedList));
+                if(unchangedList1.size() > 0){
+                    filterMultipleToUnmatched(unchangedList1, unchangedList2, list<list<Transaction>>(1, newMatchedList));
+                }
                 filterToUnmatched(firstList, unchangedList2, unchangedList1);
 
                 if((standardizedList1.find(MATCHED_TEXT) != string::npos) && (standardizedList1.find(UNMATCHED_TEXT) == string::npos) && (standardizedList1.find(PROBABLE_TEXT) == string::npos)){
@@ -25994,9 +26260,22 @@ json manuallyMatch(int id1, string tableId1, string list1, int id2, string table
             list<list<Transaction>> unchangedList;
             readForAdjustments(unchangedList, input, lastList);
 
-            reorderListofManuallyMatchedTransactions(newMatchedList, unchangedList);
+            if(unchangedList.size() > 0){
+                reorderListofManuallyMatchedTransactions(newMatchedList, unchangedList);
+            }else{
+                if(secondList.size() > 2){
+                    if(secondList.front().front().getTableId().compare(secondList.back().front().getTableId()) == 0){
+                        reorderListofManuallyMatchedTransactions(newMatchedList, secondList);
+                    }else{
+                        reorderListofManuallyMatchedTransactionsWithSecond(newMatchedList, secondList);
+                    }
+                }
+            }
 
-            filterMultipleToUnmatched(secondList, firstList, unchangedList);
+            filterMultipleToUnmatched(secondList, firstList, list<list<Transaction>>(1, newMatchedList));
+            if(unchangedList.size() > 0){
+                filterMultipleToUnmatched(unchangedList, firstList, list<list<Transaction>>(1, newMatchedList));
+            }
             filterToUnmatched(secondList, firstList, unchangedList);
 
             if((standardizedList2.find(MATCHED_TEXT) != string::npos) && (standardizedList2.find(UNMATCHED_TEXT) == string::npos) && (standardizedList2.find(PROBABLE_TEXT) == string::npos)){
@@ -26035,9 +26314,22 @@ json manuallyMatch(int id1, string tableId1, string list1, int id2, string table
             list<list<Transaction>> unchangedlist;
             readForAdjustments(unchangedlist, input, lastList);
 
-            reorderListofManuallyMatchedTransactions(newMatchedList, unchangedlist);
+            if(unchangedlist.size() > 0){
+                reorderListofManuallyMatchedTransactions(newMatchedList, unchangedlist);
+            }else{
+                if(firstList.size() > 2){
+                    if(firstList.front().front().getTableId().compare(firstList.back().front().getTableId()) == 0){
+                        reorderListofManuallyMatchedTransactions(newMatchedList, firstList);
+                    }else{
+                        reorderListofManuallyMatchedTransactionsWithSecond(newMatchedList, firstList);
+                    }
+                }
+            }
 
-            filterMultipleToUnmatched(firstList, secondList, unchangedlist);
+            filterMultipleToUnmatched(firstList, secondList, list<list<Transaction>>(1, newMatchedList));
+            if(unchangedlist.size() > 0){
+                filterMultipleToUnmatched(unchangedlist, secondList, list<list<Transaction>>(1, newMatchedList));
+            }
             filterToUnmatched(firstList, secondList, unchangedlist);
 
             if((standardizedList1.find(MATCHED_TEXT) != string::npos) && (standardizedList1.find(UNMATCHED_TEXT) == string::npos) && (standardizedList1.find(PROBABLE_TEXT) == string::npos)){
@@ -26073,14 +26365,20 @@ json manuallyMatch(int id1, string tableId1, string list1, int id2, string table
             list<list<Transaction>> unchangedList1;
             readForAdjustments(unchangedList1, input, lastList1);
 
-            reorderListofManuallyMatchedTransactions(newMatchedList, unchangedList1);
-
             string standardizedLastList1 = lastList1;
             transform(standardizedLastList1.begin(), standardizedLastList1.end(), standardizedLastList1.begin(), ::toupper);
 
             string lastList2 = determineNameOfTheLastList(list1, lastList1, input);
             list<list<Transaction>> unchangedList2;
             readForAdjustments(unchangedList2, input, lastList2);
+
+            if(unchangedList1.size() > 0 && unchangedList2.size() == 0){
+                reorderListofManuallyMatchedTransactions(newMatchedList, unchangedList1);
+            }else if(unchangedList1.size() == 0 && unchangedList2.size() > 0){
+                reorderListofManuallyMatchedTransactions(newMatchedList, unchangedList2);
+            }else if(unchangedList1.size() > 0 && unchangedList2.size() > 0){
+                reorderListofManuallyMatchedTransactions(newMatchedList, unchangedList2);
+            }
 
             if((standardizedLastList1.find(MATCHED_TEXT) != string::npos) && (standardizedLastList1.find(UNMATCHED_TEXT) == string::npos) && (standardizedLastList1.find(PROBABLE_TEXT) == string::npos)){
                 unchangedList1.push_back(newMatchedList);
@@ -26114,6 +26412,7 @@ json manuallyMatchJson(int id1, string tableId1, string list1, int id2, string t
         string standardizedList1 = list1;
         string standardizedList2 = list2;
         string nameForPercentMatching = PERCENT_MATCHING_TEXT;
+        string nameOfOutputFile = "ChangedOutput.json";
 
         transform(standardizedList1.begin(), standardizedList1.end(), standardizedList1.begin(), ::toupper);
         transform(standardizedList2.begin(), standardizedList2.end(), standardizedList2.begin(), ::toupper);
@@ -26130,43 +26429,154 @@ json manuallyMatchJson(int id1, string tableId1, string list1, int id2, string t
                 readForAdjustmentsJson(secondList, input, list2);
                 takeOutTransaction(secondList, newMatchedList, id2, tableId2);
 
-                if(firstList.front().front().getTableId().compare(firstList.end()->front().getTableId()) == 0){
-                    reorderListofManuallyMatchedTransactions(newMatchedList, firstList);
-                }else{
-                    reorderListofManuallyMatchedTransactions(newMatchedList, secondList);
-                }
+                if(firstList.size() > 1 && secondList.size() > 1){
 
-                string lastList = determineNameOfTheLastListJson(list1, list2, input);
-                list<Transaction> unchangedList;
-                readForAdjustmentsJson(unchangedList, lastList, input);
+                    if(firstList.front().front().getTableId().compare(firstList.back().front().getTableId()) == 0){
+                        reorderListofManuallyMatchedTransactions(newMatchedList, firstList);
+                    }else{
+                        reorderListofManuallyMatchedTransactions(newMatchedList, secondList);
+                    }
 
-                filterToUnmatched(firstList, unchangedList, secondList);
-                filterToUnmatched(secondList, unchangedList, firstList);
+                    string lastList = determineNameOfTheLastListJson(list1, list2, input);
+                    list<Transaction> unchangedList;
+                    readForAdjustmentsJson(unchangedList, lastList, input);
 
-                if(firstList.front().front().getTableId().compare(firstList.end()->front().getTableId()) == 0){
-                    filterMultipleToUnmatched(secondList, unchangedList, firstList);
-                }else{
-                    filterMultipleToUnmatched(firstList, unchangedList, secondList);
-                }
+                    filterMultipleToUnmatched(firstList, unchangedList, list<list<Transaction>>(1, newMatchedList));
+                    filterMultipleToUnmatched(secondList, unchangedList, list<list<Transaction>>(1, newMatchedList));
 
-                if((standardizedList1.find(MATCHED_TEXT) != string::npos) && (standardizedList1.find(UNMATCHED_TEXT) == string::npos) && (standardizedList1.find(PROBABLE_TEXT) == string::npos)){
-                    firstList.push_back(newMatchedList);
+                    filterToUnmatched(firstList, unchangedList, secondList);
+                    filterToUnmatched(secondList, unchangedList, firstList);
 
-                    json newMatchedTransactions = convertToJsonListOfLists(firstList, list1, nameForPercentMatching);
-                    json newProbMatchTransactions = convertToJsonListOfLists(secondList, list2, nameForPercentMatching);
-                    json newUnmatchedTransactions = convertToJsonList(unchangedList, lastList);
+                    if((standardizedList1.find(MATCHED_TEXT) != string::npos) && (standardizedList1.find(UNMATCHED_TEXT) == string::npos) && (standardizedList1.find(PROBABLE_TEXT) == string::npos)){
+                        firstList.push_back(newMatchedList);
 
-                    json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchTransactions, newUnmatchedTransactions);
-                    return fullObject;
-                }else{
-                    secondList.push_back(newMatchedList);
+                        json newMatchedTransactions = convertToJsonListOfLists(firstList, list1, nameForPercentMatching);
+                        json newProbMatchTransactions = convertToJsonListOfLists(secondList, list2, nameForPercentMatching);
+                        json newUnmatchedTransactions = convertToJsonList(unchangedList, lastList);
 
-                    json newMatchedTransactions = convertToJsonListOfLists(secondList, list2, nameForPercentMatching);
-                    json newProbMatchTransactions = convertToJsonListOfLists(firstList, list1, nameForPercentMatching);
-                    json newUnmatchedTransactions = convertToJsonList(unchangedList, lastList);
+                        json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchTransactions, newUnmatchedTransactions);
+                        displayJsonInFile(fullObject, nameOfOutputFile);
+                        return fullObject;
+                    }else{
+                        secondList.push_back(newMatchedList);
 
-                    json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchTransactions, newUnmatchedTransactions);
-                    return fullObject;
+                        json newMatchedTransactions = convertToJsonListOfLists(secondList, list2, nameForPercentMatching);
+                        json newProbMatchTransactions = convertToJsonListOfLists(firstList, list1, nameForPercentMatching);
+                        json newUnmatchedTransactions = convertToJsonList(unchangedList, lastList);
+
+                        json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchTransactions, newUnmatchedTransactions);
+                        displayJsonInFile(fullObject, nameOfOutputFile);
+                        return fullObject;
+                    }
+                }else if(firstList.size() <= 1 && secondList.size() > 1){
+                    if(secondList.front().front().getTableId().compare(secondList.back().front().getTableId()) == 0){
+                        reorderListofManuallyMatchedTransactions(newMatchedList, secondList);
+                    }else{
+                        reorderListofManuallyMatchedTransactions(newMatchedList, firstList);
+                    }
+
+                    string lastList = determineNameOfTheLastListJson(list1, list2, input);
+                    list<Transaction> unchangedList;
+                    readForAdjustmentsJson(unchangedList, lastList, input);
+
+                    filterMultipleToUnmatched(firstList, unchangedList, list<list<Transaction>>(1, newMatchedList));
+                    filterMultipleToUnmatched(secondList, unchangedList, list<list<Transaction>>(1, newMatchedList));
+
+                    filterToUnmatched(firstList, unchangedList, secondList);
+                    filterToUnmatched(secondList, unchangedList, firstList);
+
+                    if((standardizedList1.find(MATCHED_TEXT) != string::npos) && (standardizedList1.find(UNMATCHED_TEXT) == string::npos) && (standardizedList1.find(PROBABLE_TEXT) == string::npos)){
+                        firstList.push_back(newMatchedList);
+
+                        json newMatchedTransactions = convertToJsonListOfLists(firstList, list1, nameForPercentMatching);
+                        json newProbMatchTransactions = convertToJsonListOfLists(secondList, list2, nameForPercentMatching);
+                        json newUnmatchedTransactions = convertToJsonList(unchangedList, lastList);
+
+                        json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchTransactions, newUnmatchedTransactions);
+                        displayJsonInFile(fullObject, nameOfOutputFile);
+                        return fullObject;
+                    }else{
+                        secondList.push_back(newMatchedList);
+
+                        json newMatchedTransactions = convertToJsonListOfLists(secondList, list2, nameForPercentMatching);
+                        json newProbMatchTransactions = convertToJsonListOfLists(firstList, list1, nameForPercentMatching);
+                        json newUnmatchedTransactions = convertToJsonList(unchangedList, lastList);
+
+                        json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchTransactions, newUnmatchedTransactions);
+                        displayJsonInFile(fullObject, nameOfOutputFile);
+                        return fullObject;
+                    }
+                }else if(firstList.size() > 1 && secondList.size() <= 1){
+                    if(firstList.front().front().getTableId().compare(firstList.back().front().getTableId()) == 0){
+                        reorderListofManuallyMatchedTransactions(newMatchedList, firstList);
+                    }else{
+                        reorderListofManuallyMatchedTransactions(newMatchedList, secondList);
+                    }
+
+                    string lastList = determineNameOfTheLastListJson(list1, list2, input);
+                    list<Transaction> unchangedList;
+                    readForAdjustmentsJson(unchangedList, lastList, input);
+
+                    filterMultipleToUnmatched(firstList, unchangedList, list<list<Transaction>>(1, newMatchedList));
+                    filterMultipleToUnmatched(secondList, unchangedList, list<list<Transaction>>(1, newMatchedList));
+
+                    filterToUnmatched(firstList, unchangedList, secondList);
+                    filterToUnmatched(secondList, unchangedList, firstList);
+
+                    if((standardizedList1.find(MATCHED_TEXT) != string::npos) && (standardizedList1.find(UNMATCHED_TEXT) == string::npos) && (standardizedList1.find(PROBABLE_TEXT) == string::npos)){
+                        firstList.push_back(newMatchedList);
+
+                        json newMatchedTransactions = convertToJsonListOfLists(firstList, list1, nameForPercentMatching);
+                        json newProbMatchTransactions = convertToJsonListOfLists(secondList, list2, nameForPercentMatching);
+                        json newUnmatchedTransactions = convertToJsonList(unchangedList, lastList);
+
+                        json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchTransactions, newUnmatchedTransactions);
+                        displayJsonInFile(fullObject, nameOfOutputFile);
+                        return fullObject;
+                    }else{
+                        secondList.push_back(newMatchedList);
+
+                        json newMatchedTransactions = convertToJsonListOfLists(secondList, list2, nameForPercentMatching);
+                        json newProbMatchTransactions = convertToJsonListOfLists(firstList, list1, nameForPercentMatching);
+                        json newUnmatchedTransactions = convertToJsonList(unchangedList, lastList);
+
+                        json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchTransactions, newUnmatchedTransactions);
+                        displayJsonInFile(fullObject, nameOfOutputFile);
+                        return fullObject;
+                    }
+                }else if(firstList.size() == 1 && secondList.size() == 1){
+
+                    string lastList = determineNameOfTheLastListJson(list1, list2, input);
+                    list<Transaction> unchangedList;
+                    readForAdjustmentsJson(unchangedList, lastList, input);
+
+                    filterMultipleToUnmatched(firstList, unchangedList, list<list<Transaction>>(1, newMatchedList));
+                    filterMultipleToUnmatched(secondList, unchangedList, list<list<Transaction>>(1, newMatchedList));
+
+                    filterToUnmatched(firstList, unchangedList, secondList);
+                    filterToUnmatched(secondList, unchangedList, firstList);
+
+                    if((standardizedList1.find(MATCHED_TEXT) != string::npos) && (standardizedList1.find(UNMATCHED_TEXT) == string::npos) && (standardizedList1.find(PROBABLE_TEXT) == string::npos)){
+                        firstList.push_back(newMatchedList);
+
+                        json newMatchedTransactions = convertToJsonListOfLists(firstList, list1, nameForPercentMatching);
+                        json newProbMatchTransactions = convertToJsonListOfLists(secondList, list2, nameForPercentMatching);
+                        json newUnmatchedTransactions = convertToJsonList(unchangedList, lastList);
+
+                        json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchTransactions, newUnmatchedTransactions);
+                        displayJsonInFile(fullObject, nameOfOutputFile);
+                        return fullObject;
+                    }else{
+                        secondList.push_back(newMatchedList);
+
+                        json newMatchedTransactions = convertToJsonListOfLists(secondList, list2, nameForPercentMatching);
+                        json newProbMatchTransactions = convertToJsonListOfLists(firstList, list1, nameForPercentMatching);
+                        json newUnmatchedTransactions = convertToJsonList(unchangedList, lastList);
+
+                        json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchTransactions, newUnmatchedTransactions);
+                        displayJsonInFile(fullObject, nameOfOutputFile);
+                        return fullObject;
+                    }
                 }
             }else{
                 list<list<Transaction>> firstList;
@@ -26178,13 +26588,24 @@ json manuallyMatchJson(int id1, string tableId1, string list1, int id2, string t
                 list<list<Transaction>> unchangedList1;
                 readForAdjustmentsJson(unchangedList1, input, lastList1);
 
-                reorderListofManuallyMatchedTransactions(newMatchedList, unchangedList1);
+                if(unchangedList1.size() > 0){
+                    reorderListofManuallyMatchedTransactions(newMatchedList, unchangedList1);
+                }else if(unchangedList1.size() == 0 && firstList.size() > 2){
+                    if(firstList.front().front().getTableId().compare(firstList.back().front().getTableId()) == 0){
+                        reorderListofManuallyMatchedTransactions(newMatchedList, firstList);
+                    }else{
+                        reorderListofManuallyMatchedTransactionsWithSecond(newMatchedList, firstList);
+                    }
+                }
 
                 string lastList2 = determineNameOfTheLastListJson(list1, lastList1, input);
                 list<Transaction> unchangedList2;
                 readForAdjustmentsJson(unchangedList2, lastList2, input);
 
-                filterMultipleToUnmatched(firstList, unchangedList2, unchangedList1);
+                filterMultipleToUnmatched(firstList, unchangedList2, list<list<Transaction>>(1, newMatchedList));
+                if(unchangedList1.size() > 0){
+                    filterMultipleToUnmatched(unchangedList1, unchangedList2, list<list<Transaction>>(1, newMatchedList));
+                }
                 filterToUnmatched(firstList, unchangedList2, unchangedList1);
 
                 if((standardizedList1.find(MATCHED_TEXT) != string::npos) && (standardizedList1.find(UNMATCHED_TEXT) == string::npos) && (standardizedList1.find(PROBABLE_TEXT) == string::npos)){
@@ -26195,6 +26616,7 @@ json manuallyMatchJson(int id1, string tableId1, string list1, int id2, string t
                     json newUnmatchedTransactions = convertToJsonList(unchangedList2, lastList2);
 
                     json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchedTransactions, newUnmatchedTransactions);
+                    displayJsonInFile(fullObject, nameOfOutputFile);
                     return fullObject;
                 }else{
                     unchangedList1.push_back(newMatchedList);
@@ -26204,6 +26626,7 @@ json manuallyMatchJson(int id1, string tableId1, string list1, int id2, string t
                     json newUnmatchedTransactions = convertToJsonList(unchangedList2, lastList2);
 
                     json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchedTransactions, newUnmatchedTransactions);
+                    displayJsonInFile(fullObject, nameOfOutputFile);
                     return fullObject;
                 }
             }
@@ -26222,9 +26645,22 @@ json manuallyMatchJson(int id1, string tableId1, string list1, int id2, string t
             list<list<Transaction>> unchangedList;
             readForAdjustmentsJson(unchangedList, input, lastList);
 
-            reorderListofManuallyMatchedTransactions(newMatchedList, unchangedList);
+            if(unchangedList.size() > 0){
+                reorderListofManuallyMatchedTransactions(newMatchedList, unchangedList);
+            }else{
+                if(secondList.size() > 2){
+                    if(secondList.front().front().getTableId().compare(secondList.back().front().getTableId()) == 0){
+                        reorderListofManuallyMatchedTransactions(newMatchedList, secondList);
+                    }else{
+                        reorderListofManuallyMatchedTransactionsWithSecond(newMatchedList, secondList);
+                    }
+                }
+            }
 
-            filterMultipleToUnmatched(secondList, firstList, unchangedList);
+            filterMultipleToUnmatched(secondList, firstList, list<list<Transaction>>(1, newMatchedList));
+            if(unchangedList.size() > 0){
+                filterMultipleToUnmatched(unchangedList, firstList, list<list<Transaction>>(1, newMatchedList));
+            }
             filterToUnmatched(secondList, firstList, unchangedList);
 
             if((standardizedList2.find(MATCHED_TEXT) != string::npos) && (standardizedList2.find(UNMATCHED_TEXT) == string::npos) && (standardizedList2.find(PROBABLE_TEXT) == string::npos)){
@@ -26235,6 +26671,7 @@ json manuallyMatchJson(int id1, string tableId1, string list1, int id2, string t
                 json newUnmatchedTransactions = convertToJsonList(firstList, list1);
 
                 json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchedTransactions, newUnmatchedTransactions);
+                displayJsonInFile(fullObject, nameOfOutputFile);
                 return fullObject;
             }else{
                 unchangedList.push_back(newMatchedList);
@@ -26244,6 +26681,7 @@ json manuallyMatchJson(int id1, string tableId1, string list1, int id2, string t
                 json newUnmatchedTransactions = convertToJsonList(firstList, list1);
 
                 json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchedTransactions, newUnmatchedTransactions);
+                displayJsonInFile(fullObject, nameOfOutputFile);
                 return fullObject;
             }
         }else if((standardizedList1.find(UNMATCHED_TEXT) == string::npos) && (standardizedList2.find(UNMATCHED_TEXT) != string::npos)){
@@ -26261,9 +26699,22 @@ json manuallyMatchJson(int id1, string tableId1, string list1, int id2, string t
             list<list<Transaction>> unchangedlist;
             readForAdjustmentsJson(unchangedlist, input, lastList);
 
-            reorderListofManuallyMatchedTransactions(newMatchedList, unchangedlist);
+            if(unchangedlist.size() > 0){
+                reorderListofManuallyMatchedTransactions(newMatchedList, unchangedlist);
+            }else{
+                if(firstList.size() > 2){
+                    if(firstList.front().front().getTableId().compare(firstList.back().front().getTableId()) == 0){
+                        reorderListofManuallyMatchedTransactions(newMatchedList, firstList);
+                    }else{
+                        reorderListofManuallyMatchedTransactionsWithSecond(newMatchedList, firstList);
+                    }
+                }
+            }
 
-            filterMultipleToUnmatched(firstList, secondList, unchangedlist);
+            filterMultipleToUnmatched(firstList, secondList, list<list<Transaction>>(1, newMatchedList));
+            if(unchangedlist.size() > 0){
+                filterMultipleToUnmatched(unchangedlist, secondList, list<list<Transaction>>(1, newMatchedList));
+            }
             filterToUnmatched(firstList, secondList, unchangedlist);
 
             if((standardizedList1.find(MATCHED_TEXT) != string::npos) && (standardizedList1.find(UNMATCHED_TEXT) == string::npos) && (standardizedList1.find(PROBABLE_TEXT) == string::npos)){
@@ -26274,6 +26725,7 @@ json manuallyMatchJson(int id1, string tableId1, string list1, int id2, string t
                 json newUnmatchedTransactions = convertToJsonList(secondList, list2);
 
                 json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchTransactions, newUnmatchedTransactions);
+                displayJsonInFile(fullObject, nameOfOutputFile);
                 return fullObject;
             }else{
                 unchangedlist.push_back(newMatchedList);
@@ -26283,6 +26735,7 @@ json manuallyMatchJson(int id1, string tableId1, string list1, int id2, string t
                 json newUnmatchedTransactions = convertToJsonList(secondList, list2);
 
                 json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchTransactions, newUnmatchedTransactions);
+                displayJsonInFile(fullObject, nameOfOutputFile);
                 return fullObject;
             }
         }else if((standardizedList1.find(UNMATCHED_TEXT) != string::npos) && (standardizedList2.find(UNMATCHED_TEXT) != string::npos)){
@@ -26297,14 +26750,20 @@ json manuallyMatchJson(int id1, string tableId1, string list1, int id2, string t
             list<list<Transaction>> unchangedList1;
             readForAdjustmentsJson(unchangedList1, input, lastList1);
 
-            reorderListofManuallyMatchedTransactions(newMatchedList, unchangedList1);
-
             string standardizedLastList1 = lastList1;
             transform(standardizedLastList1.begin(), standardizedLastList1.end(), standardizedLastList1.begin(), ::toupper);
 
             string lastList2 = determineNameOfTheLastListJson(list1, lastList1, input);
             list<list<Transaction>> unchangedList2;
             readForAdjustmentsJson(unchangedList2, input, lastList2);
+
+            if(unchangedList1.size() > 0 && unchangedList2.size() == 0){
+                reorderListofManuallyMatchedTransactions(newMatchedList, unchangedList1);
+            }else if(unchangedList1.size() == 0 && unchangedList2.size() > 0){
+                reorderListofManuallyMatchedTransactions(newMatchedList, unchangedList2);
+            }else if(unchangedList1.size() > 0 && unchangedList2.size() > 0){
+                reorderListofManuallyMatchedTransactions(newMatchedList, unchangedList2);
+            }
 
             if((standardizedLastList1.find(MATCHED_TEXT) != string::npos) && (standardizedLastList1.find(UNMATCHED_TEXT) == string::npos) && (standardizedLastList1.find(PROBABLE_TEXT) == string::npos)){
                 unchangedList1.push_back(newMatchedList);
@@ -26314,6 +26773,7 @@ json manuallyMatchJson(int id1, string tableId1, string list1, int id2, string t
                 json newUnmatchedTransactions = convertToJsonList(firstList, list1);
 
                 json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchTransactions, newUnmatchedTransactions);
+                displayJsonInFile(fullObject, nameOfOutputFile);
                 return fullObject;
             }else{
                 unchangedList2.push_back(newMatchedList);
@@ -26323,6 +26783,7 @@ json manuallyMatchJson(int id1, string tableId1, string list1, int id2, string t
                 json newUnmatchedTransactions = convertToJsonList(firstList, list1);
 
                 json fullObject = makeJsonObject(newMatchedTransactions, newProbMatchTransactions, newUnmatchedTransactions);
+                displayJsonInFile(fullObject, nameOfOutputFile);
                 return fullObject;
             }
         }
