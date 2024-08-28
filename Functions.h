@@ -24779,9 +24779,9 @@ using namespace std;
 using json = nlohmann::json;
 
 //Constants
-const int DAYS_TO_MATCH = 3;
+const int DAYS_TO_MATCH = 60;
 const int PERCENT_TO_MATCH = 100;
-const int PERCENT_TO_PROB_MATCH = 50;
+const int PERCENT_TO_PROB_MATCH = 60;
 const string MATCHED_TEXT = "MATCHED";
 const string PROBABLE_TEXT = "PROBABLE";
 const string UNMATCHED_TEXT = "UNMATCHED";
@@ -26169,6 +26169,12 @@ json manuallyMatch(int id1, string tableId1, string list1, int id2, string table
                     list<Transaction> unchangedList;
                     readForAdjustments(unchangedList, lastList, input);
 
+                    if(unchangedList.size() > 1){
+                        if(unchangedList.front().getTableId().compare(unchangedList.back().getTableId()) != 0){
+                            reorderListofManuallyMatchedTransactions(newMatchedList, list<list<Transaction>>(1, unchangedList));
+                        }
+                    }
+
                     filterMultipleToUnmatched(firstList, unchangedList, list<list<Transaction>>(1, newMatchedList));
                     filterMultipleToUnmatched(secondList, unchangedList, list<list<Transaction>>(1, newMatchedList));
 
@@ -26554,6 +26560,12 @@ string manuallyMatchJson(int id1, string tableId1, string list1, int id2, string
                     string lastList = determineNameOfTheLastListJson(list1, list2, input);
                     list<Transaction> unchangedList;
                     readForAdjustmentsJson(unchangedList, lastList, input);
+
+                    if(unchangedList.size() > 1){
+                        if(unchangedList.front().getTableId().compare(unchangedList.back().getTableId()) != 0){
+                            reorderListofManuallyMatchedTransactions(newMatchedList, list<list<Transaction>>(1, unchangedList));
+                        }
+                    }
 
                     filterMultipleToUnmatched(firstList, unchangedList, list<list<Transaction>>(1, newMatchedList));
                     filterMultipleToUnmatched(secondList, unchangedList, list<list<Transaction>>(1, newMatchedList));
